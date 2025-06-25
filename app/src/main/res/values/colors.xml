@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
+    <!-- Original Background colors (unchanged) -->
+    <color name="primary_color">#FFE1D0D1</color>
+    <color name="secondary_color">#FFD8B4B5</color>
+
+    <!-- Original Button colors (unchanged) -->
+    <color name="button_color">#FF892E24</color> <!-- Deep red button -->
+    <color name="button_text_color">#FFFFFFFF</color> <!-- White text -->
+
+    <!-- Original Text colors (unchanged) -->
+    <color name="text_color">@color/white</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+
+    <!-- New additional colors needed for login screen -->
+    <color name="text_color_secondary">#FF5D5D5D</color> <!-- Gray text color -->
+    <color name="register_text_color">#FF892E24</color> <!-- Same as button_color -->
 </resources>

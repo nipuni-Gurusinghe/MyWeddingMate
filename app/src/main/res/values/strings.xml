@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">MyWeddingMateApp</string>
+    <string name="greeting_line">Welcome to MyWeddingMate!!</string>
+    <string name="app_name">MyWeddingMate</string>
+    <string name="welcome_text">Welcome to</string>
+    <string name="tagline">your Blissful Journey</string>
+    <string name="get_started">Get Started</string>
 </resources>
