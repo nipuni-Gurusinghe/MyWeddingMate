@@ -1,3 +1,9 @@
 <resources>
-    <string name="app_name">MyWeddingMateApp</string>
+    <string name="app_name">profile</string>
+    <string name="update">Update</string>
+    <string name="phone">Phone</string>
+    <string name="profile">Profile</string>
+    <string name="full_name">Full Name</string>
+    <string name="email">Email</string>
+    <string name="bio">Bio</string>
 </resources>
