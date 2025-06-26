@@ -7,4 +7,15 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Custom theme/app colors -->
+    <color name="primary">#8B4C4C</color>
+    <color name="primary_variant">#4B2323</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="secondary">#F4D4D4</color>
+    <color name="on_secondary">#000000</color>
+    <color name="background_white">#FFFFFF</color>
+    <color name="card_background">#FFE4EC</color>
+    <color name="text_heading">#880E4F</color>
+    <color name="text_subtle">#4A004E</color>
 </resources>

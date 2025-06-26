@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.Profile" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="colorPrimary">#8B4C4C</item>
-        <item name="colorPrimaryVariant">#4B2323</item>
-        <item name="colorOnPrimary">#FFFFFF</item>
-        <item name="colorSecondary">#F4D4D4</item>
-        <item name="colorOnSecondary">#000000</item>
-        <item name="android:windowBackground">#FFFFFF</item>
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorOnSecondary">@color/on_secondary</item>
+        <item name="android:windowBackground">@color/background_white</item>
     </style>
 </resources>
+
