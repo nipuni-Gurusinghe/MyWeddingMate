@@ -39,6 +39,11 @@
         <activity
             android:name=".BridalWearActivity"
             android:exported="false" />
+
+        <activity
+            android:name=".FloralActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>
