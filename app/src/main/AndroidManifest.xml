@@ -55,6 +55,10 @@
         <activity
             android:name=".WeddingCarActivity"
             android:exported="false" />
+
+        <activity
+            android:name=".BeauticianBrideActivity"
+            android:exported="false" />
     </application>
 
 
