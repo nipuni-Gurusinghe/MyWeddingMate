@@ -51,6 +51,10 @@
         <activity
             android:name=".EntertainmentActivity"
             android:exported="false" />
+
+        <activity
+            android:name=".WeddingCarActivity"
+            android:exported="false" />
     </application>
 
 
