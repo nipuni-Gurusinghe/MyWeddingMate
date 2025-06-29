@@ -59,8 +59,23 @@
         <activity
             android:name=".BeauticianBrideActivity"
             android:exported="false" />
+
+        <activity
+            android:name=".BeauticianGroomActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".GroomWearActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".InvitationActivity"
+            android:exported="false" />
+
+
     </application>
 
 
 
 </manifest>
+
