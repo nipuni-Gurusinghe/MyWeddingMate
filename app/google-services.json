@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "251079550467",
+    "project_id": "myweddingmate-edcbc",
+    "storage_bucket": "myweddingmate-edcbc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:251079550467:android:5765645ee97cb3faf69036",
+        "android_client_info": {
+          "package_name": "com.example.myweddingmateapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKQ1r1UIQB5yTvTll_Nu3cyoWeczPMIck"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -8,4 +8,37 @@
     <string name="email">Email</string>
     <string name="bio">Bio</string>
     <string name="client_checklist">Client Checklist</string>
+
+    <!-- Input field descriptions -->
+    <string name="partner1_name_desc" translatable="false">Enter first partner\'s name</string>
+    <string name="partner2_name_desc" translatable="false">Enter second partner\'s name</string>
+    <string name="email_desc" translatable="false">Enter email address</string>
+    <string name="phone_desc" translatable="false">Enter phone number</string>
+    <string name="address_desc" translatable="false">Enter address</string>
+
+    <!-- Icon descriptions -->
+    <string name="profile_photo_desc" translatable="false">Couple profile photo</string>
+    <string name="partner1_icon_desc" translatable="false">First partner icon</string>
+    <string name="partner2_icon_desc" translatable="false">Second partner icon</string>
+    <string name="email_icon_desc" translatable="false">Email icon</string>
+    <string name="phone_icon_desc" translatable="false">Phone icon</string>
+    <string name="address_icon_desc" translatable="false">Address icon</string>
+
+    <!-- Hints (used for accessibility) -->
+    <string name="partner1_name_hint" translatable="false">Partner 1 Name</string>
+    <string name="partner2_name_hint" translatable="false">Partner 2 Name</string>
+    <string name="email_hint" translatable="false">Email Address</string>
+    <string name="phone_hint" translatable="false">Phone Number</string>
+    <string name="address_hint" translatable="false">Address</string>
+    <string name="cancel">cancle\n</string>
+    <string name="save_profile">Save_profile</string>
+    <string name="required_fields">required_fields</string>
+    <string name="address_label">address_label</string>
+    <string name="phone_label">phone_label\n</string>
+    <string name="email_label">email_label\n</string>
+    <string name="contact_information">contact_information\n</string>
+    <string name="partner2_name_label">partner2_name_label</string>
+    <string name="partner1_name_label">partner1_name_label</string>
+    <string name="partner_information">partner_information</string>
+    <string name="change_photo">change_photo\n</string>
 </resources>
