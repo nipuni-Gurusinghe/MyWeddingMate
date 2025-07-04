@@ -20,6 +20,8 @@ class LoginActivity : AppCompatActivity() {
         loginButton.setOnClickListener {
             // Handle login logic here
             // You can add validation and authentication logic
+            val intent = Intent(this,WishlistActivity::class.java)
+            startActivity(intent)
         }
 
         registerTextView.setOnClickListener {
