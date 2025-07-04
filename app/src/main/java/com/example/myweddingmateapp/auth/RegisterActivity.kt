@@ -52,9 +52,9 @@ class RegisterActivity : AppCompatActivity() {
             Toast.makeText(this, "Registering as: $selectedRole", Toast.LENGTH_SHORT).show()
 
             // After successful registration, you might do:
-            // val intent = Intent(this, MainActivity::class.java)
-            // startActivity(intent)
-            // finish()
+             val intent = Intent(this, PlannerDashboardActivity::class.java)
+             startActivity(intent)
+             finish()
         }
 
         loginTextView.setOnClickListener {

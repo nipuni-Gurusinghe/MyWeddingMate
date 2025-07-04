@@ -24,9 +24,12 @@
             </intent-filter>
         </activity>
 
+
+
         <activity
             android:name=".WishlistActivity"
             android:exported="false" />
+
 
         <activity
             android:name=".VenuesActivity"
@@ -77,6 +80,11 @@
 
         <activity android:name=".RegisterActivity"
             android:exported="false"/>
+
+        <activity android:name=".PlannerDashboardActivity"
+            android:exported="false" >
+            
+        </activity>
 
 
 
