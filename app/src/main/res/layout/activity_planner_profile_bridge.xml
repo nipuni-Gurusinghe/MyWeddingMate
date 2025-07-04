@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background_light"
-    tools:context=".repository.PlannerProfileBridge">
+    tools:context=".Repository.PlannerProfileBridge">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -133,7 +133,7 @@
                             android:textSize="14sp"
                             android:textColor="@color/text_secondary"
                             android:gravity="center"
-
+                            android:drawableTop="@drawable/ic_money"
                             android:drawablePadding="4dp" />
 
                     </LinearLayout>

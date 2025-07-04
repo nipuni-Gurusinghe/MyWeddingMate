@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Add internet permission for Firebase -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -91,7 +95,130 @@
         </activity>
 
 
+ <activity
+            android:name=".CoupleProfileActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.Profile">
+        
+        </activity>
 
+        <!-- Home Activity -->
+        <activity
+            android:name=".HomeActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Profile" />
+
+        <!-- Todo Activity -->
+        <activity
+            android:name=".TodoActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Profile" />
+
+        <!-- Vendor Selection Activity -->
+        <activity
+            android:name=".VendorSelectionActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Profile" />
+
+<!--        &lt;!&ndash; Budget Overview Activity &ndash;&gt;-->
+<!--        <activity-->
+<!--            android:name=".BudgetOverviewActivity"-->
+<!--            android:exported="false"-->
+<!--            android:screenOrientation="portrait"-->
+<!--            android:theme="@style/Theme.Profile" />-->
+
+        <!-- Couple Dashboard Activity -->
+        <activity
+            android:name=".CoupleDashboardActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Profile" />
+
+
+
+<!--        &lt;!&ndash; Planner Dashboard Activity &ndash;&gt;-->
+<!--        <activity-->
+<!--            android:name=".PlannerDashboardActivity"-->
+<!--            android:exported="false"-->
+<!--            android:screenOrientation="portrait"-->
+<!--            android:theme="@style/Theme.Profile" />-->
+
+
+        <activity
+            android:name=".WeddingPlannersActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+
+
+        <activity
+            android:name=".WishlistActivity"
+            android:exported="false" />
+
+
+        <activity
+            android:name=".VenuesActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".PhotographyActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".BridalWearActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".FloralActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".JewelleryActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".EntertainmentActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".WeddingCarActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".BeauticianBrideActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".BeauticianGroomActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".GroomWearActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".InvitationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".FavoritesActivity"
+            android:exported="false" />
+
+
+        <activity android:name=".LoginActivity"
+            android:exported="false"/>
+
+        <activity android:name=".RegisterActivity"
+            android:exported="false"/>
+
+        <activity android:name=".PlannerDashboardActivity"
+            android:exported="false" >
+            
+        </activity>
 
     </application>
 
