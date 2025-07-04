@@ -133,7 +133,7 @@
                             android:textSize="14sp"
                             android:textColor="@color/text_secondary"
                             android:gravity="center"
-                            android:drawableTop="@drawable/ic_money"
+
                             android:drawablePadding="4dp" />
 
                     </LinearLayout>
