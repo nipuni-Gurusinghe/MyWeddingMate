@@ -74,6 +74,10 @@
         <activity
             android:name=".InvitationActivity"
             android:exported="false" />
+        <activity
+            android:name=".FavoritesActivity"
+            android:exported="false" />
+
 
         <activity android:name=".LoginActivity"
             android:exported="false"/>

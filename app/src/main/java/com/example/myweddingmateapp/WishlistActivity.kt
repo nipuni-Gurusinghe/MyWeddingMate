@@ -2,16 +2,13 @@ package com.example.myweddingmateapp
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import android.widget.ImageView
-import android.widget.TextView
 import android.widget.LinearLayout
+import androidx.appcompat.app.AppCompatActivity
 import com.example.myweddingmateapp.databinding.ActivityWishlistBinding
 
 class WishlistActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityWishlistBinding
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -19,8 +16,8 @@ class WishlistActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setupClickListeners()
+        setupNavBar()
     }
-
 
     private fun setupClickListeners() {
         binding.venuesCard.setOnClickListener {
@@ -57,4 +54,33 @@ class WishlistActivity : AppCompatActivity() {
             startActivity(Intent(this, WeddingCarActivity::class.java))
         }
     }
+
+
+    private fun setupNavBar() {
+        // Home button - reloads WishlistActivity
+        findViewById<LinearLayout>(R.id.navHome).setOnClickListener {
+            startActivity(Intent(this, WishlistActivity::class.java))
+            finish()
+        }
+
+//        // To-do List button
+//        findViewById<LinearLayout>(R.id.navTodo).setOnClickListener {
+//            startActivity(Intent(this, ChecklistActivity::class.java))
+//            finish()
+//        }
+
+//        // Profile button
+//        findViewById<LinearLayout>(R.id.navProfile).setOnClickListener {
+//            startActivity(Intent(this, ProfileActivity::class.java))
+//            finish()
+//        }
+
+        // Wishlist icon - goes to FavouritesActivity
+        findViewById<LinearLayout>(R.id.navWishlist).setOnClickListener {
+            startActivity(Intent(this, FavoritesActivity::class.java))
+            finish()
+        }
+    }
+
+
 }
