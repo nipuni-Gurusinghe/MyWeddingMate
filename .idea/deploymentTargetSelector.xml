@@ -2,7 +2,7 @@ git<?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="app">
+      <SelectionState runConfigName="MyWeddingMateApp.app">
         <option name="selectionMode" value="DROPDOWN" />
         <DropdownSelection timestamp="2025-06-25T19:05:50.613960700Z">
           <Target type="DEFAULT_BOOT">
