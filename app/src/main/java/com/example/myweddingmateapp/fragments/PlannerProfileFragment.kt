@@ -8,7 +8,7 @@ import android.widget.*
 import androidx.fragment.app.Fragment
 import com.example.myweddingmateapp.R
 
-class ProfileFragment : Fragment() {
+class PlannerProfileFragment : Fragment() {
 
     private lateinit var profilePicture: ImageView
     private lateinit var btnEditPicture: ImageView

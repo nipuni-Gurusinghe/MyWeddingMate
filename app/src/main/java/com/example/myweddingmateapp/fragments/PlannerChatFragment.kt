@@ -7,15 +7,15 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myweddingmateapp.R
-import com.example.myweddingmateapp.adapters.ChatAdapter
-import com.example.myweddingmateapp.adapters.ChatListAdapter
+import com.example.myweddingmateapp.adapters.PlannerChatAdapter
+import com.example.myweddingmateapp.adapters.PlannerChatListAdapter
 import com.example.myweddingmateapp.databinding.FragmentPlannerChatBinding
 import com.example.myweddingmateapp.databinding.FragmentPlannerChatListBinding
 import com.example.myweddingmateapp.models.ChatItem
 import com.example.myweddingmateapp.models.ChatMessage
 import com.google.android.material.snackbar.Snackbar
 
-class ChatFragment : Fragment() {
+class PlannerChatFragment : Fragment() {
     private var _chatBinding: FragmentPlannerChatBinding? = null
     private var _listBinding: FragmentPlannerChatListBinding? = null
     private val chatBinding get() = _chatBinding!!
@@ -62,9 +62,9 @@ class ChatFragment : Fragment() {
 
     private fun setupChatList() {
         listBinding.recyclerChats.layoutManager = LinearLayoutManager(requireContext())
-        listBinding.recyclerChats.adapter = ChatListAdapter(chatList) { chatItem ->
+        listBinding.recyclerChats.adapter = PlannerChatListAdapter(chatList) { chatItem ->
             parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, ChatFragment().apply {
+                .replace(R.id.fragmentContainer, PlannerChatFragment().apply {
                     arguments = Bundle().apply {
                         putBoolean("isChatOpen", true)
                         putString("recipientName", chatItem.name)
@@ -92,7 +92,7 @@ class ChatFragment : Fragment() {
         chatBinding.recyclerChat.layoutManager = LinearLayoutManager(requireContext()).apply {
             stackFromEnd = true
         }
-        chatBinding.recyclerChat.adapter = ChatAdapter(messages)
+        chatBinding.recyclerChat.adapter = PlannerChatAdapter(messages)
 
         chatBinding.btnSend.setOnClickListener {
             val message = chatBinding.editMessage.text.toString()

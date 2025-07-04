@@ -8,8 +8,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.myweddingmateapp.R
 import com.example.myweddingmateapp.models.ChatMessage
 
-class ChatAdapter(private val messages: List<ChatMessage>) :
-    RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
+class PlannerChatAdapter(private val messages: List<ChatMessage>) :
+    RecyclerView.Adapter<PlannerChatAdapter.ChatViewHolder>() {
 
     override fun getItemViewType(position: Int): Int {
         return if (messages[position].isReceived) 0 else 1

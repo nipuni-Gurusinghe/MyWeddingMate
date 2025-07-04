@@ -9,10 +9,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.myweddingmateapp.R
 import com.example.myweddingmateapp.models.ChatItem
 
-class ChatListAdapter(
+class PlannerChatListAdapter(
     private val chats: List<ChatItem>,
     private val onClick: (ChatItem) -> Unit
-) : RecyclerView.Adapter<ChatListAdapter.ViewHolder>() {
+) : RecyclerView.Adapter<PlannerChatListAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val name: TextView = view.findViewById(R.id.txtName)
