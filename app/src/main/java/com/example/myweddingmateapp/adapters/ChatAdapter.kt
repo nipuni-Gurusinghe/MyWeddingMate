@@ -11,19 +11,27 @@ import com.example.myweddingmateapp.models.ChatMessage
 class ChatAdapter(private val messages: List<ChatMessage>) :
     RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
 
-    inner class ChatViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val sender: TextView = itemView.findViewById(R.id.textSender)
-        private val message: TextView = itemView.findViewById(R.id.textMessage)
-
-        fun bind(msg: ChatMessage) {
-            sender.text = msg.sender
-            message.text = msg.message
-        }
+    override fun getItemViewType(position: Int): Int {
+        return if (messages[position].isReceived) 0 else 1
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChatViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_message, parent, false)
+        val layout = if (viewType == 0) R.layout.item_message_received
+        else R.layout.item_message_sent
+        val view = LayoutInflater.from(parent.context).inflate(layout, parent, false)
         return ChatViewHolder(view)
+    }
+
+    inner class ChatViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val textSender: TextView? = itemView.findViewById(R.id.textSender)
+        private val textMessage: TextView = itemView.findViewById(R.id.textMessage)
+        private val textTime: TextView = itemView.findViewById(R.id.textTime)
+
+        fun bind(message: ChatMessage) {
+            textSender?.text = message.senderName
+            textMessage.text = message.message
+            textTime.text = message.displayTime
+        }
     }
 
     override fun onBindViewHolder(holder: ChatViewHolder, position: Int) {
