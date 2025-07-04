@@ -59,25 +59,25 @@ class WishlistActivity : AppCompatActivity() {
     private fun setupNavBar() {
         // Home button - reloads WishlistActivity
         findViewById<LinearLayout>(R.id.navHome).setOnClickListener {
-            startActivity(Intent(this, WishlistActivity::class.java))
+            startActivity(Intent(this, HomeActivity::class.java))
             finish()
         }
 
-//        // To-do List button
-//        findViewById<LinearLayout>(R.id.navTodo).setOnClickListener {
-//            startActivity(Intent(this, ChecklistActivity::class.java))
-//            finish()
-//        }
+        // To-do List button
+        findViewById<LinearLayout>(R.id.navTodo).setOnClickListener {
+            startActivity(Intent(this, TodoActivity::class.java))
+            finish()
+        }
 
-//        // Profile button
-//        findViewById<LinearLayout>(R.id.navProfile).setOnClickListener {
-//            startActivity(Intent(this, ProfileActivity::class.java))
-//            finish()
-//        }
+        // Profile button
+        findViewById<LinearLayout>(R.id.navProfile).setOnClickListener {
+            startActivity(Intent(this, CoupleProfileActivity::class.java))
+            finish()
+        }
 
         // Wishlist icon - goes to FavouritesActivity
         findViewById<LinearLayout>(R.id.navWishlist).setOnClickListener {
-            startActivity(Intent(this, FavoritesActivity::class.java))
+            startActivity(Intent(this, WishlistActivity::class.java))
             finish()
         }
     }
