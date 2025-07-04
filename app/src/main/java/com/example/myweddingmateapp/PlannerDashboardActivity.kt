@@ -4,10 +4,10 @@ import android.os.Bundle
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import com.example.myweddingmateapp.fragments.ChatFragment
-import com.example.myweddingmateapp.fragments.ChecklistFragment
-import com.example.myweddingmateapp.fragments.DashboardFragment
-import com.example.myweddingmateapp.fragments.ProfileFragment
+import com.example.myweddingmateapp.fragments.PlannerChatFragment
+import com.example.myweddingmateapp.fragments.PlannerChecklistFragment
+import com.example.myweddingmateapp.fragments.PlannerDashboardFragment
+import com.example.myweddingmateapp.fragments.PlannerProfileFragment
 
 class PlannerDashboardActivity : AppCompatActivity() {
 
@@ -25,22 +25,22 @@ class PlannerDashboardActivity : AppCompatActivity() {
         navChat = findViewById(R.id.navChat)
         navProfile = findViewById(R.id.navProfile)
 
-        loadFragment(DashboardFragment())
+        loadFragment(PlannerDashboardFragment())
 
         navHome.setOnClickListener {
-            loadFragment(DashboardFragment())
+            loadFragment(PlannerDashboardFragment())
         }
 
         navChecklist.setOnClickListener {
-            loadFragment(ChecklistFragment())
+            loadFragment(PlannerChecklistFragment())
         }
 
         navChat.setOnClickListener {
-            loadFragment(ChatFragment())
+            loadFragment(PlannerChatFragment())
         }
 
         navProfile.setOnClickListener {
-            loadFragment(ProfileFragment())
+            loadFragment(PlannerProfileFragment())
         }
     }
 

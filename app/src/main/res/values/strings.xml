@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">My Wedding Mate</string>
+    <!-- Friend's Strings -->
+    <string name="greeting_line">Welcome to MyWeddingMate!!</string>
+    <string name="app_name">MyWeddingMate</string>
+    <string name="welcome_text">Welcome to</string>
+    <string name="tagline">your Blissful Journey</string>
+    <string name="get_started">Get Started</string>
+
+    <!-- Your Extra Strings -->
     <string name="update">Update</string>
     <string name="phone">Phone</string>
     <string name="profile">Profile</string>
@@ -41,4 +48,15 @@
     <string name="partner1_name_label">partner1_name_label</string>
     <string name="partner_information">partner_information</string>
     <string name="change_photo">change_photo\n</string>
+    <string name="reviews">Reviews</string>
+    <string name="search_chats">Search chats</string>
+    <string name="no_new_clients_added">No new clients added</string>
+    <string name="new_clients">🧑‍🤝‍🧑 New Clients</string>
+    <string name="no_reminders_scheduled">No reminders scheduled</string>
+    <string name="no_budget_data_available">No budget data available</string>
+    <string name="budget_summary">💰 Budget Summary</string>
+    <string name="upcoming_reminders">⏰ Upcoming Reminders</string>
+    <string name="my_wedding_checklists">📝 My Wedding Checklists</string>
+    <string name="LKR">LKR</string>
 </resources>
+
