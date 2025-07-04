@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Add internet permission for Firebase -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -12,43 +16,77 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Profile"
         tools:targetApi="31">
-<!--        <activity-->
-<!--            android:name=".MainActivity"-->
-<!--            android:exported="true"-->
-<!--            android:label="@string/app_name"-->
-<!--            android:theme="@style/Theme.Profile">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.MAIN" />-->
 
-<!--                <category android:name="android.intent.category.LAUNCHER" />-->
-<!--            </intent-filter>-->
-<!--        </activity>-->
         <activity
-            android:name=".PlannerDashboardActivity"
-            android:exported="true"
+            android:name=".MainActivity"
+            android:exported="false"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.Profile" />
 
-            android:theme="@style/Theme.Profile"
-            tools:ignore="RedundantLabel">
-
-        </activity>
-
+        <!-- Couple Profile Activity (Main Launcher) -->
         <activity
             android:name=".CoupleProfileActivity"
             android:exported="true"
-
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.Profile">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
+        <!-- Home Activity -->
+        <activity
+            android:name=".HomeActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Profile" />
+
+        <!-- Todo Activity -->
+        <activity
+            android:name=".TodoActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Profile" />
+
+        <!-- Vendor Selection Activity -->
+        <activity
+            android:name=".VendorSelectionActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Profile" />
+
+<!--        &lt;!&ndash; Budget Overview Activity &ndash;&gt;-->
+<!--        <activity-->
+<!--            android:name=".BudgetOverviewActivity"-->
+<!--            android:exported="false"-->
+<!--            android:screenOrientation="portrait"-->
+<!--            android:theme="@style/Theme.Profile" />-->
+
+        <!-- Couple Dashboard Activity -->
+        <activity
+            android:name=".CoupleDashboardActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Profile" />
+
+
+
+<!--        &lt;!&ndash; Planner Dashboard Activity &ndash;&gt;-->
+<!--        <activity-->
+<!--            android:name=".PlannerDashboardActivity"-->
+<!--            android:exported="false"-->
+<!--            android:screenOrientation="portrait"-->
+<!--            android:theme="@style/Theme.Profile" />-->
+
+
         <activity
             android:name=".WeddingPlannersActivity"
-            android:theme="@style/Theme.AppCompat.NoActionBar"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+
 
 
     </application>

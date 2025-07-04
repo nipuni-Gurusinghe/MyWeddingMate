@@ -19,9 +19,9 @@ import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 
-/**
- * Activity to display and select wedding planners
- */
+
+// select wedding planners
+
 class WeddingPlannersActivity : AppCompatActivity() {
 
     companion object {
@@ -55,9 +55,9 @@ class WeddingPlannersActivity : AppCompatActivity() {
         loadWeddingPlanners()
     }
 
-    /**
-     * Initialize all views
-     */
+
+//     Initialize view
+
     private fun initializeViews() {
         toolbar = findViewById(R.id.toolbar)
         recyclerViewPlanners = findViewById(R.id.recyclerViewPlanners)
@@ -65,9 +65,9 @@ class WeddingPlannersActivity : AppCompatActivity() {
         emptyView = findViewById(R.id.emptyView)
     }
 
-    /**
-     * Setup toolbar with back navigation
-     */
+
+//     Setup toolbar with back navigation
+
     private fun setupToolbar() {
         setSupportActionBar(toolbar)
         supportActionBar?.apply {
@@ -81,9 +81,9 @@ class WeddingPlannersActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Setup RecyclerView with adapter
-     */
+
+//      Setup RecyclerView with adapter
+
     private fun setupRecyclerView() {
         plannerAdapter = WeddingPlannerAdapter(
             context = this,
@@ -103,16 +103,16 @@ class WeddingPlannersActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Initialize Firebase Firestore
-     */
+
+//     Initialize Firebase Firestore
+
     private fun initializeFirebase() {
         firestore = FirebaseFirestore.getInstance()
     }
 
-    /**
-     * Load wedding planners from Firebase
-     */
+
+//      Load wedding planners from Firebase
+
     private fun loadWeddingPlanners() {
         showLoading(true)
 
@@ -143,9 +143,9 @@ class WeddingPlannersActivity : AppCompatActivity() {
             }
     }
 
-    /**
-     * Update UI based on data state
-     */
+
+//      Update UI based on data state
+
     private fun updateUI() {
         showLoading(false)
 
@@ -157,25 +157,25 @@ class WeddingPlannersActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Show/hide loading indicator
-     */
+
+//      Show/hide loading indicator
+
     private fun showLoading(show: Boolean) {
         progressIndicator.visibility = if (show) View.VISIBLE else View.GONE
         recyclerViewPlanners.visibility = if (show) View.GONE else View.VISIBLE
     }
 
-    /**
-     * Show/hide empty state
-     */
+
+//      Show/hide empty state
+
     private fun showEmptyState(show: Boolean) {
         emptyView.visibility = if (show) View.VISIBLE else View.GONE
         recyclerViewPlanners.visibility = if (show) View.GONE else View.VISIBLE
     }
 
-    /**
-     * Handle planner selection
-     */
+
+//      Handle planner selection
+
     private fun selectPlanner(planner: WeddingPlanner) {
         Log.d(TAG, "Planner selected: ${planner.name}")
 
@@ -192,9 +192,9 @@ class WeddingPlannersActivity : AppCompatActivity() {
         overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
     }
 
-    /**
-     * View planner profile in detail
-     */
+
+//     View planner profile in detail
+
     private fun viewPlannerProfile(planner: WeddingPlanner) {
         Log.d(TAG, "Viewing profile for: ${planner.name}")
 
@@ -210,45 +210,43 @@ class WeddingPlannersActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Show error message
-     */
+
     private fun showError(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
-    /**
-     * Handle back button press
-     */
+
+//      back btn press
+
     override fun onBackPressed() {
         super.onBackPressed()
         overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
     }
 
-    /**
-     * Refresh planners list
-     */
+
+//      Refresh planners list
+
     private fun refreshPlanners() {
         loadWeddingPlanners()
     }
 
-    /**
-     * Filter planners by availability
-     */
+
+//      Filter planners by availability
+
     private fun filterAvailablePlanners() {
         plannerAdapter.filterByAvailability(true)
     }
 
-    /**
-     * Sort planners by rating
-     */
+
+//      Sort planners by rating
+
     private fun sortPlannersByRating() {
         plannerAdapter.sortByRating()
     }
 
-    /**
-     * Sort planners by experience
-     */
+
+//     by experience
+
     private fun sortPlannersByExperience() {
         plannerAdapter.sortByExperience()
     }

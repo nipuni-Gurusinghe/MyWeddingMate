@@ -13,7 +13,8 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.example.myweddingmateapp.models.WeddingPlanner
 import com.example.myweddingmateapp.R
-import com.example.weddingplan3.WeddingPlannersActivity
+import com.example.myweddingmateapp.WeddingPlannersActivity
+//import com.example.weddingplan3.WeddingPlannersActivity
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
@@ -201,8 +202,8 @@ class PlannerProfileBridge : AppCompatActivity() {
             val chip = Chip(this).apply {
                 text = specialty
                 isClickable = false
-                setChipBackgroundColorResource(R.color.chip_background)
-                setTextColor(getColor(R.color.chip_text))
+                setChipBackgroundColorResource(R.color.background_white)
+                setTextColor(getColor(R.color.purple_700))
             }
             specialtiesChipGroup.addView(chip)
         }

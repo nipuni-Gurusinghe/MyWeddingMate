@@ -1,6 +1,5 @@
 package com.example.myweddingmateapp
 
-// coupleProfile
 import android.Manifest
 import android.app.Activity
 import android.content.Context
@@ -42,7 +41,6 @@ import java.util.regex.Pattern
 
 class CoupleProfileActivity : BaseActivity() {
 
-    // UI Components
     private lateinit var toolbar: MaterialToolbar
     private lateinit var ivProfilePhoto: ImageView
     private lateinit var btnChangePhoto: MaterialButton
@@ -59,7 +57,7 @@ class CoupleProfileActivity : BaseActivity() {
     private lateinit var btnCancel: MaterialButton
     private lateinit var btnSaveProfile: MaterialButton
 
-    // Data and Preferences
+
     private lateinit var sharedPreferences: SharedPreferences
     private var currentPhotoPath: String = ""
     private var isEditMode: Boolean = false
@@ -81,7 +79,7 @@ class CoupleProfileActivity : BaseActivity() {
         private const val STORAGE_PERMISSION_REQUEST_CODE = 101
     }
 
-    // BaseActivity abstract method implementations
+    // BaseActivity abstract methods
     override fun getCurrentNavId(): Int = R.id.navProfile
 
     override fun getLayoutResourceId(): Int = R.layout.activity_couple_profile
@@ -394,7 +392,7 @@ class CoupleProfileActivity : BaseActivity() {
     }
 
     private fun saveProfileData(profile: CoupleProfile) {
-        // Using manual JSON creation to avoid Gson dependency
+
         val profileJson = """
             {
                 "id": "${profile.id}",
@@ -418,8 +416,7 @@ class CoupleProfileActivity : BaseActivity() {
         val profileJson = sharedPreferences.getString(KEY_PROFILE_DATA, null)
         if (profileJson != null) {
             try {
-                // Simple JSON parsing for basic data
-                // In a production app, consider using a proper JSON library
+
                 coupleProfileData = parseProfileFromJson(profileJson)
                 populateFields()
                 isEditMode = true
@@ -430,7 +427,6 @@ class CoupleProfileActivity : BaseActivity() {
     }
 
     private fun parseProfileFromJson(json: String): CoupleProfile {
-        // Basic JSON parsing - replace with proper JSON library in production
         val id = extractJsonValue(json, "id")
         val partner1Name = extractJsonValue(json, "partner1Name")
         val partner2Name = extractJsonValue(json, "partner2Name")

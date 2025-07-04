@@ -15,7 +15,6 @@ import com.example.myweddingmateapp.models.WeddingPlanner
 
 class HomeActivity : BaseActivity() {
 
-    // UI Components
     private lateinit var btnProfile: Button
     private lateinit var btnPlanners: Button
     private lateinit var btnVendors: Button
@@ -206,7 +205,7 @@ class HomeActivity : BaseActivity() {
     }
 
     private fun updateUIForSelectedPlanner(planner: WeddingPlanner) {
-        // Implementation remains the same
+
     }
 
     private fun showWelcomeMessage() {
@@ -239,11 +238,13 @@ class HomeActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "Home activity resumed")
-        refreshButtonStates()
+    //    refreshButtonStates()
     }
 
     private fun refreshButtonStates() {
         val hasProfile = checkIfProfileExists()
+
+        System.out.println("hasProfile" + hasProfile)
         btnPlanners.isEnabled = hasProfile
         btnVendors.isEnabled = hasProfile
         btnBudget.isEnabled = hasProfile

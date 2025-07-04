@@ -1,4 +1,3 @@
-// VendorSelectionActivity.kt
 package com.example.myweddingmateapp
 
 import android.os.Bundle
@@ -17,6 +16,6 @@ class VendorSelectionActivity : BaseActivity() {
     }
 
     private fun initializeVendorComponents() {
-        // Add your existing vendor selection activity initialization code here
+        // vendor selection activity initialization
     }
 }

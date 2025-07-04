@@ -12,7 +12,7 @@ class CoupleDashboardActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Check if this is the first launch or if we should redirect
+
         handleInitialNavigation()
     }
 
@@ -20,7 +20,7 @@ class CoupleDashboardActivity : BaseActivity() {
         // You can add logic here to determine which screen to show first
         // For example, check if user is logged in, has completed onboarding, etc.
 
-        // For now, let's redirect to HomeActivity by default
+         // For now, let's redirect to HomeActivity by default
         val intent = Intent(this, HomeActivity::class.java)
         startActivity(intent)
         finish()

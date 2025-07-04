@@ -12,9 +12,7 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.example.myweddingmateapp.models.WeddingPlanner
 import com.example.myweddingmateapp.R
 
-/**
- * RecyclerView Adapter for Wedding Planners list
- */
+
 class WeddingPlannerAdapter(
     private val context: Context,
     private var planners: MutableList<WeddingPlanner> = mutableListOf(),
