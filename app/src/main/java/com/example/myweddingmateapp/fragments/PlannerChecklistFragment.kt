@@ -8,13 +8,13 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myweddingmateapp.R
-import com.example.myweddingmateapp.adapters.ChecklistAdapter
+import com.example.myweddingmateapp.adapters.PlannerChecklistAdapter
 import com.example.myweddingmateapp.models.Client
 
-class ChecklistFragment : Fragment() {
+class PlannerChecklistFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
-    private lateinit var checklistAdapter: ChecklistAdapter
+    private lateinit var plannerChecklistAdapter: PlannerChecklistAdapter
     private val clients = listOf(
         Client("Nadeesha & Sahan", R.drawable.ic_profile),
         Client("Ravi & Anjali", R.drawable.ic_profile),
@@ -26,15 +26,15 @@ class ChecklistFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_checklist, container, false)
+        return inflater.inflate(R.layout.fragment_planner_checklist, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         recyclerView = view.findViewById(R.id.recyclerChecklist)
-        checklistAdapter = ChecklistAdapter(clients) { client -> }
+        plannerChecklistAdapter = PlannerChecklistAdapter(clients) { client -> }
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView.adapter = checklistAdapter
+        recyclerView.adapter = plannerChecklistAdapter
     }
 }

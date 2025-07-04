@@ -9,10 +9,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.myweddingmateapp.R
 import com.example.myweddingmateapp.models.Client
 
-class ChecklistAdapter(
+class PlannerChecklistAdapter(
     private val clients: List<Client>,
     private val onItemClick: (Client) -> Unit
-) : RecyclerView.Adapter<ChecklistAdapter.ClientViewHolder>() {
+) : RecyclerView.Adapter<PlannerChecklistAdapter.ClientViewHolder>() {
 
     inner class ClientViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val name: TextView = itemView.findViewById(R.id.textClientName)

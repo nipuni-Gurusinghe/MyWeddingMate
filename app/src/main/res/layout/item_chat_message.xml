@@ -1,28 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="12dp"
     android:orientation="vertical"
-    android:background="#FFFFFF"
-    android:layout_marginBottom="10dp"
+    android:padding="12dp"
+    android:layout_marginBottom="8dp"
+    android:background="@drawable/bg_chat_message"
     android:elevation="2dp">
 
-    <TextView
-        android:id="@+id/textSender"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Sender"
-        android:textColor="#880E4F"
-        android:textStyle="bold"
-        android:textSize="14sp" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/textSender"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:textColor="#880E4F"
+            tools:text="Nadeesha  Sahan"/>
+
+        <TextView
+            android:id="@+id/textTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textSize="12sp"
+            android:textColor="#616161"
+            tools:text="10:30 AM"/>
+    </LinearLayout>
 
     <TextView
         android:id="@+id/textMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Message content here..."
-        android:textColor="#4A004E"
+        android:layout_marginTop="4dp"
         android:textSize="16sp"
-        android:layout_marginTop="4dp" />
+        android:textColor="#4A004E"
+        tools:text="Can we schedule a cake tasting this Friday?"/>
 </LinearLayout>
