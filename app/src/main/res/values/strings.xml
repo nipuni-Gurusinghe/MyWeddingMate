@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">My Wedding Mate</string>
+    <!-- Friend's Strings -->
+    <string name="greeting_line">Welcome to MyWeddingMate!!</string>
+    <string name="app_name">MyWeddingMate</string>
+    <string name="welcome_text">Welcome to</string>
+    <string name="tagline">your Blissful Journey</string>
+    <string name="get_started">Get Started</string>
+
+    <!-- Your Extra Strings -->
     <string name="update">Update</string>
     <string name="phone">Phone</string>
     <string name="profile">Profile</string>
@@ -52,3 +59,4 @@
     <string name="my_wedding_checklists">📝 My Wedding Checklists</string>
     <string name="LKR">LKR</string>
 </resources>
+
