@@ -65,7 +65,7 @@ class RegisterActivity : AppCompatActivity() {
                             "userId" to userId,
                             "name" to name,
                             "email" to email,
-                            "password" to password, // ⚠️ Not recommended to store plain passwords!
+                            "password" to password, // ⚠ Not recommended to store plain passwords!
                             "role" to selectedRole
                         )
 
