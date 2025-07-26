@@ -3,71 +3,110 @@ package com.example.myweddingmateapp
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.widget.ImageButton
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.myweddingmateapp.adapters.InvitationAdapter
 import com.example.myweddingmateapp.databinding.ActivityInvitationBinding
+import com.example.myweddingmateapp.models.Invitation
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 class InvitationActivity : AppCompatActivity() {
     private lateinit var binding: ActivityInvitationBinding
     private lateinit var prefs: PrefsHelper
-    private val favoriteMap = mutableMapOf<String, Boolean>()
+    private val invitationList = mutableListOf<Invitation>()
+    private lateinit var db: FirebaseFirestore // Declare Firestore instance
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityInvitationBinding.inflate(layoutInflater)
         setContentView(binding.root)
         prefs = PrefsHelper.getInstance(this)
+        db = Firebase.firestore // Initialize Firestore
 
         setupBackButton()
-        loadInitialFavorites()
-        setupFavoriteButtons()
-        setupButtonClickListeners()
+        setupRecyclerView()
+        fetchInvitationsFromFirestore() // Call function to fetch data from Firestore
     }
 
-    private fun loadInitialFavorites() {
-        val savedFavorites = prefs.getFavorites()
-        listOf("cardCraft", "elegantInvites", "weddingCardCo", "premiumCards").forEach { supplier ->
-            favoriteMap[supplier] = savedFavorites.contains(supplier)
-            updateHeartIcon(supplier)
-        }
-    }
-
-    private fun updateHeartIcon(supplierKey: String) {
-        val button = when(supplierKey) {
-            "cardCraft" -> binding.cardCraftFavorite
-            "elegantInvites" -> binding.elegantInvitesFavorite
-            "weddingCardCo" -> binding.weddingCardCoFavorite
-            "premiumCards" -> binding.premiumCardsFavorite
-            else -> null
-        }
-
-        button?.setImageResource(
-            if (favoriteMap[supplierKey] == true) R.drawable.ic_heart_filled
-            else R.drawable.ic_heart_outline
+    private fun setupRecyclerView() {
+        binding.invitationRecyclerView.layoutManager = LinearLayoutManager(this)
+        binding.invitationRecyclerView.adapter = InvitationAdapter(
+            invitations = invitationList,
+            onFavoriteClick = { invitation ->
+                invitation.isFavorite = !invitation.isFavorite
+                if (invitation.isFavorite) {
+                    prefs.addFavorite(invitation.id, "invitation")
+                } else {
+                    prefs.removeFavorite(invitation.id, "invitation")
+                }
+                binding.invitationRecyclerView.adapter?.notifyItemChanged(
+                    invitationList.indexOf(invitation)
+                )
+            },
+            onWebsiteClick = { url ->
+                openWebsite(url)
+            }
         )
     }
 
-    private fun setupButtonClickListeners() {
-        // Card Craft
-        binding.cardCraftButton.setOnClickListener {
-            openWebsite("https://www.cardcraft.lk/")
-        }
+    private fun fetchInvitationsFromFirestore() {
+        db.collection("invitation") // Refer to your new collection
+            .get()
+            .addOnSuccessListener { result ->
+                invitationList.clear() // Clear existing hardcoded data
+                val imageMap = createImageResourceMap() // Create map for image resources
 
-        // Elegant Invites
-        binding.elegantInvitesButton.setOnClickListener {
-            openWebsite("https://www.elegantinvites.com/")
-        }
+                for (document in result) {
+                    try {
+                        val id = document.id
+                        val name = document.getString("name") ?: ""
+                        val imageResIdName = document.getString("imageResId") ?: ""
+                        val rating = document.getDouble("rating")?.toFloat() ?: 0.0f
+                        val reviewCount = document.getLong("reviewCount")?.toInt() ?: 0
+                        val websiteUrl = document.getString("websiteUrl") ?: ""
 
-        // Wedding Card Co
-        binding.weddingCardCoButton.setOnClickListener {
-            openWebsite("https://www.weddingcardco.com/")
-        }
+                        // Get the actual drawable ID from the map, default to placeholder if not found
+                        val imageDrawableId = imageMap[imageResIdName] ?: R.drawable.placeholder_venue // IMPORTANT: Add a placeholder image in res/drawable
 
-        // Premium Cards
-        binding.premiumCardsButton.setOnClickListener {
-            openWebsite("https://www.premiumcards.lk/")
-        }
+                        val invitation = Invitation(
+                            id = id,
+                            name = name,
+                            imageResId = imageDrawableId,
+                            rating = rating,
+                            reviewCount = reviewCount,
+                            websiteUrl = websiteUrl,
+                            isFavorite = prefs.isFavorite(id, "invitation")
+                        )
+                        invitationList.add(invitation)
+                    } catch (e: Exception) {
+                        Log.e("InvitationActivity", "Error parsing document ${document.id}: ${e.message}", e)
+                        Toast.makeText(this, "Error parsing data for ${document.id}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                binding.invitationRecyclerView.adapter?.notifyDataSetChanged()
+            }
+            .addOnFailureListener { exception ->
+                Log.w("InvitationActivity", "Error getting invitation documents: ", exception)
+                Toast.makeText(this, "Error loading invitation data: ${exception.message}", Toast.LENGTH_SHORT).show()
+                // Optionally, you could load hardcoded data as a fallback here
+                // loadInitialData() // Uncomment if you want fallback hardcoded data on Firestore failure
+            }
+    }
+
+    // Helper function to map image resource names (from Firestore) to their R.drawable IDs
+    private fun createImageResourceMap(): Map<String, Int> {
+        val map = mutableMapOf<String, Int>()
+        map["card_craft"] = R.drawable.card_craft
+        map["elegant_invites"] = R.drawable.elegant_invites
+        map["wedding_card_co"] = R.drawable.wedding_card_co
+        map["premium_cards"] = R.drawable.premium_cards
+        // Add all your invitation image resources here
+        // e.g., map["another_card_maker_image"] = R.drawable.another_card_maker_image
+        return map
     }
 
     private fun openWebsite(url: String) {
@@ -83,29 +122,5 @@ class InvitationActivity : AppCompatActivity() {
         binding.backButton.setOnClickListener {
             finish()
         }
-    }
-
-    private fun setupFavoriteButtons() {
-        binding.cardCraftFavorite.setOnClickListener {
-            toggleFavorite("cardCraft", binding.cardCraftFavorite)
-        }
-        binding.elegantInvitesFavorite.setOnClickListener {
-            toggleFavorite("elegantInvites", binding.elegantInvitesFavorite)
-        }
-        binding.weddingCardCoFavorite.setOnClickListener {
-            toggleFavorite("weddingCardCo", binding.weddingCardCoFavorite)
-        }
-        binding.premiumCardsFavorite.setOnClickListener {
-            toggleFavorite("premiumCards", binding.premiumCardsFavorite)
-        }
-    }
-
-    private fun toggleFavorite(supplierKey: String, button: ImageButton) {
-        val isFavorite = favoriteMap[supplierKey] ?: false
-        favoriteMap[supplierKey] = !isFavorite
-        updateHeartIcon(supplierKey)
-
-        val favorites = favoriteMap.filter { it.value }.keys.toMutableSet()
-        prefs.saveFavorites(favorites)
     }
 }

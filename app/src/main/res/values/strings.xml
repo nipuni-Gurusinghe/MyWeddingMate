@@ -58,5 +58,38 @@
     <string name="upcoming_reminders">⏰ Upcoming Reminders</string>
     <string name="my_wedding_checklists">📝 My Wedding Checklists</string>
     <string name="LKR">LKR</string>
+    <string name="venues_title">Venues</string>
+    <string name="back_button_description">Navigate back</string>
+    <string name="item_image_desc">Vendor image</string>
+    <string name="remove_favorite_desc">Remove from favorites</string>
+    <string name="venue_image_desc">Venue image</string>
+    <string name="favorite_button_desc">Toggle favorite</string>
+    <string name="visit_website">Visit Website</string>
+    <string name="venue_rating_format">Rating: %1$.1f (%2$d+ reviews)</string>
+    <string name="favorites_title">My Favorites</string>
+    <string name="no_favorites_message">No favorites yet\nTap to refresh</string>
+    <string name="empty_favorites_desc">Empty favorites icon</string>
+    <string name="removed_from_favorites">%s removed from favorites</string>
+    <string name="favorites_list_description">List of favorite wedding items</string>
+    <string name="favorite_item_image_desc">Favorite item image</string>
+    <string name="photography_image_desc">Photography service image</string>
+    <string name="bridal_wear_image_desc">Bridal wear image</string>
+    <string name="bridal_wear">Bridal Wear</string>
+    <string name="groom_wear_image_desc">Groom wear image</string>
+    <string name="groom_wear">Groom Wear</string>
+    <string name="beautician_groom_image_desc">Groom beautician service image</string>
+    <string name="beautician_groom">Groom Grooming</string>
+    <string name="jewellery_image_desc">Jewellery store image</string>
+    <string name="jewellery">Jewellery</string>
+    <string name="entertainment_image_desc">Entertainment service image</string>
+    <string name="entertainment">Entertainment</string>
+    <string name="floral_image_desc">Floral decoration service image</string>
+    <string name="floral_decor">Floral Decor</string>
+    <string name="invitation_image_desc">Invitation card service image</string>
+    <string name="invitation_cards">Invitation Cards</string>
+    <string name="wedding_cars">Wedding Cars</string>
+    <string name="wedding_car_image_desc">Wedding car service image</string>
+    <string name="beautician_image_desc">Bridal beautician photo</string>
+
 </resources>
 
