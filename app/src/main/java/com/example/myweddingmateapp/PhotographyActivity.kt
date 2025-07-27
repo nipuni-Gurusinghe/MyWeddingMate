@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myweddingmateapp.adapters.PhotographyAdapter
 import com.example.myweddingmateapp.databinding.ActivityPhotographyBinding
 import com.example.myweddingmateapp.models.Photography
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
@@ -19,12 +20,15 @@ class PhotographyActivity : AppCompatActivity() {
     private val photographyList = mutableListOf<Photography>()
     private val db = Firebase.firestore
     private lateinit var adapter: PhotographyAdapter
+    private lateinit var auth: FirebaseAuth // ADDED: Declaration for FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPhotographyBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         prefs = PrefsHelper.getInstance(this)
+        auth = FirebaseAuth.getInstance()
 
         setupBackButton()
         setupRecyclerView()
@@ -35,11 +39,18 @@ class PhotographyActivity : AppCompatActivity() {
         adapter = PhotographyAdapter(
             photographyList = photographyList,
             onFavoriteClick = { photography ->
+                val userId = auth.currentUser?.uid
+
+                if (userId == null) { // ADDED: Check if user is logged in
+                    Toast.makeText(this, "Please log in to favorite photographers.", Toast.LENGTH_SHORT).show()
+                    return@PhotographyAdapter // Exit the lambda early if no user
+                }
+
                 photography.isFavorite = !photography.isFavorite
                 if (photography.isFavorite) {
-                    prefs.addFavorite(photography.id, "photography")
+                    prefs.addFavorite(userId, photography.id, "photography")
                 } else {
-                    prefs.removeFavorite(photography.id, "photography")
+                    prefs.removeFavorite(userId, photography.id, "photography")
                 }
                 val position = photographyList.indexOfFirst { it.id == photography.id }
                 if (position != -1) {
@@ -56,13 +67,20 @@ class PhotographyActivity : AppCompatActivity() {
     }
 
     private fun fetchPhotographyData() {
+        val currentUserId = auth.currentUser?.uid
+
         db.collection("photography")
             .get()
             .addOnSuccessListener { result ->
                 photographyList.clear()
                 result.documents.mapNotNull { doc ->
                     doc.toObject(Photography::class.java)?.apply {
-                        isFavorite = prefs.isFavorite(id, "photography")
+                        // MODIFIED: Conditionally check favorite based on userId
+                        isFavorite = if (currentUserId != null) {
+                            prefs.isFavorite(currentUserId, id, "photography")
+                        } else {
+                            false
+                        }
                     }
                 }.let {
                     photographyList.addAll(it)

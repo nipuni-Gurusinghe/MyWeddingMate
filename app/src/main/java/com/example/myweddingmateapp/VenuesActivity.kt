@@ -3,12 +3,14 @@ package com.example.myweddingmateapp
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myweddingmateapp.adapters.VenuesAdapter
 import com.example.myweddingmateapp.databinding.ActivityVenuesBinding
 import com.example.myweddingmateapp.models.Venue
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -18,6 +20,7 @@ class VenuesActivity : AppCompatActivity() {
     private lateinit var prefs: PrefsHelper
     private val venuesList = mutableListOf<Venue>()
     private lateinit var db: FirebaseFirestore
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,6 +29,7 @@ class VenuesActivity : AppCompatActivity() {
 
         prefs = PrefsHelper.getInstance(this)
         db = Firebase.firestore
+        auth = FirebaseAuth.getInstance()
 
         setupBackButton()
         setupRecyclerView()
@@ -37,11 +41,19 @@ class VenuesActivity : AppCompatActivity() {
         binding.venuesRecyclerView.adapter = VenuesAdapter(
             venues = venuesList,
             onFavoriteClick = { venue ->
+                val userId = auth.currentUser?.uid
+
+                if (userId == null) {
+
+                    Toast.makeText(this, "Please log in to favorite venues.", Toast.LENGTH_SHORT).show()
+                    return@VenuesAdapter // Exit the lambda
+                }
+
                 venue.isFavorite = !venue.isFavorite
                 if (venue.isFavorite) {
-                    prefs.addFavorite(venue.id, "venue")
+                    prefs.addFavorite(userId, venue.id, "venue")
                 } else {
-                    prefs.removeFavorite(venue.id, "venue")
+                    prefs.removeFavorite(userId, venue.id, "venue")
                 }
                 binding.venuesRecyclerView.adapter?.notifyItemChanged(venuesList.indexOf(venue))
             },
@@ -52,13 +64,20 @@ class VenuesActivity : AppCompatActivity() {
     }
 
     private fun fetchVenuesFromFirestore() {
+        val currentUserId = auth.currentUser?.uid
+
         db.collection("venues")
             .get()
             .addOnSuccessListener { result ->
                 venuesList.clear()
                 for (document in result) {
                     val venue = document.toObject(Venue::class.java).apply {
-                        isFavorite = prefs.isFavorite(id, "venue")
+                        // Check favorite status using the currentUserId
+                        isFavorite = if (currentUserId != null) {
+                            prefs.isFavorite(currentUserId, id, "venue")
+                        } else {
+                            false
+                        }
                     }
                     venuesList.add(venue)
                 }

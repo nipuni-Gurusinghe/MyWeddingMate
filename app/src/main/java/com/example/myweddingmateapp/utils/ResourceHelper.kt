@@ -88,16 +88,14 @@ object ResourceHelper {
             "bridalwear" -> bridalWearImageMap[resName]
             "beauticianbride", "beautician" -> beauticianImageMap[resName]
             "groomwear" -> groomWearImageMap[resName]
-            // --- NEW CASES START HERE ---
             "jewellery" -> jewelleryImageMap[resName]
             "entertainment" -> entertainmentImageMap[resName]
             "floral" -> floralImageMap[resName]
             "invitation" -> invitationImageMap[resName]
             "weddingcar" -> weddingCarImageMap[resName]
-            // --- NEW CASES END HERE ---
+
             else -> {
-                // If the type is not recognized, try all maps as a last resort
-                // or return a generic placeholder with a warning.
+
                 Log.w("ResourceHelper", "Unknown type '$type'. Trying all image maps for '$resName'.")
                 venueImageMap[resName]
                     ?: photographyImageMap[resName]

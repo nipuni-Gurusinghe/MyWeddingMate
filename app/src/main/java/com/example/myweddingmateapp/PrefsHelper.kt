@@ -12,6 +12,7 @@ class PrefsHelper private constructor(context: Context) {
 
     companion object {
         @Volatile private var instance: PrefsHelper? = null
+        private const val BASE_FAVORITES_KEY = "favorites"
 
         fun getInstance(context: Context): PrefsHelper {
             return instance ?: synchronized(this) {
@@ -20,38 +21,52 @@ class PrefsHelper private constructor(context: Context) {
         }
     }
 
-    // Add a favorite item with category
-    fun addFavorite(itemId: String, category: String) {
-        val normalizedCategory = normalizeCategory(category)
-        val key = "$normalizedCategory$CATEGORY_SEPARATOR$itemId"
-        Log.d(TAG, "Adding favorite: $key")
-
-        val current = getFavoritesRaw().toMutableSet()
-        current.add(key)
-        sharedPref.edit().putStringSet("favorites", current).apply()
+    // Helper to get the user-specific SharedPreferences key
+    private fun getUserFavoritesKey(userId: String): String {
+        return "${userId}_$BASE_FAVORITES_KEY"
     }
 
-    // Remove a favorite item
-    fun removeFavorite(itemId: String, category: String) {
+    // Add a favorite item for a specific user and category
+    fun addFavorite(userId: String, itemId: String, category: String) {
         val normalizedCategory = normalizeCategory(category)
-        val key = "$normalizedCategory$CATEGORY_SEPARATOR$itemId"
-        Log.d(TAG, "Removing favorite: $key")
+        val itemKey = "$normalizedCategory$CATEGORY_SEPARATOR$itemId"
+        val userPrefKey = getUserFavoritesKey(userId)
 
-        val current = getFavoritesRaw().toMutableSet()
-        current.remove(key)
-        sharedPref.edit().putStringSet("favorites", current).apply()
+        val current = getUserFavoritesRaw(userId).toMutableSet()
+        if (current.add(itemKey)) {
+            sharedPref.edit().putStringSet(userPrefKey, current).apply()
+            Log.d(TAG, "Added favorite for user $userId: $itemKey")
+        } else {
+            Log.d(TAG, "Favorite already exists for user $userId: $itemKey")
+        }
     }
 
-    // Check if an item is favorite
-    fun isFavorite(itemId: String, category: String): Boolean {
+    // Remove a favorite item for a specific user
+    fun removeFavorite(userId: String, itemId: String, category: String) {
         val normalizedCategory = normalizeCategory(category)
-        return getFavoritesRaw().contains("$normalizedCategory$CATEGORY_SEPARATOR$itemId")
+        val itemKey = "$normalizedCategory$CATEGORY_SEPARATOR$itemId"
+        val userPrefKey = getUserFavoritesKey(userId)
+
+        val current = getUserFavoritesRaw(userId).toMutableSet()
+        if (current.remove(itemKey)) {
+            sharedPref.edit().putStringSet(userPrefKey, current).apply()
+            Log.d(TAG, "Removed favorite for user $userId: $itemKey")
+        } else {
+            Log.d(TAG, "Favorite not found for user $userId: $itemKey")
+        }
     }
 
-    // Get all favorites grouped by category
-    fun getAllFavorites(): Map<String, Set<String>> {
-        val favorites = getFavoritesRaw()
-        Log.d(TAG, "All raw favorites: $favorites")
+    // Check if an item is favorite for a specific user
+    fun isFavorite(userId: String, itemId: String, category: String): Boolean {
+        val normalizedCategory = normalizeCategory(category)
+        val itemKey = "$normalizedCategory$CATEGORY_SEPARATOR$itemId"
+        return getUserFavoritesRaw(userId).contains(itemKey)
+    }
+
+
+    fun getAllFavorites(userId: String): Map<String, Set<String>> {
+        val favorites = getUserFavoritesRaw(userId)
+        Log.d(TAG, "All raw favorites for user $userId: $favorites")
 
         return favorites.groupBy { item ->
             item.substringBefore(CATEGORY_SEPARATOR)
@@ -60,42 +75,40 @@ class PrefsHelper private constructor(context: Context) {
                 item.substringAfter(CATEGORY_SEPARATOR)
             }.toSet()
         }.also { groupedFavorites ->
-            Log.d(TAG, "Grouped favorites: $groupedFavorites")
+            Log.d(TAG, "Grouped favorites for user $userId: $groupedFavorites")
         }
     }
 
-    // Get raw favorites set
-    private fun getFavoritesRaw(): Set<String> {
-        return sharedPref.getStringSet("favorites", mutableSetOf()) ?: mutableSetOf()
+
+    private fun getUserFavoritesRaw(userId: String): Set<String> {
+        val userPrefKey = getUserFavoritesKey(userId)
+        return sharedPref.getStringSet(userPrefKey, mutableSetOf()) ?: mutableSetOf()
     }
 
-    // Normalize category names for consistency
+
     private fun normalizeCategory(category: String): String {
         return when (category.lowercase()) {
             "bridalwear", "bridal_wear", "bridalwears" -> "bridalWear"
             "beautician", "beautician_bride", "beauticianbride" -> "beauticianBride"
             "venue", "venues" -> "venue"
             "photography", "photographer" -> "photography"
+            "beauticiangroom" -> "beauticianGroom"
+            "groomwear" -> "groomWear"
+            "jewellery" -> "jewellery"
+            "entertainment" -> "entertainment"
+            "floral" -> "floral"
+            "invitation" -> "invitation"
+            "weddingcar" -> "weddingCar"
             else -> category
         }
     }
 
-    // Clear all favorites
-    fun clearAllFavorites() {
-        sharedPref.edit().remove("favorites").apply()
-        Log.d(TAG, "Cleared all favorites")
+
+    fun clearAllFavoritesForUser(userId: String) {
+        val userPrefKey = getUserFavoritesKey(userId)
+        sharedPref.edit().remove(userPrefKey).apply()
+        Log.d(TAG, "Cleared all favorites for user $userId")
     }
 
-    // Migration from old format if needed
-    fun migrateOldFavoritesIfNeeded() {
-        val oldFavorites = sharedPref.getStringSet("old_favorites", null)
-        oldFavorites?.let {
-            Log.d(TAG, "Migrating old favorites format")
-            val converted = it.map { id -> "venue$CATEGORY_SEPARATOR$id" }.toSet()
-            sharedPref.edit()
-                .putStringSet("favorites", converted)
-                .remove("old_favorites")
-                .apply()
-        }
-    }
+
 }

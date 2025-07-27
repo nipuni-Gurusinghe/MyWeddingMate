@@ -13,14 +13,14 @@
         android:layout_height="match_parent"
         android:padding="16dp">
 
-        <!-- Banner Image -->
+
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:scaleType="centerCrop"
             android:src="@drawable/first" />
 
-        <!-- Header Text -->
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -32,17 +32,17 @@
             android:textColor="#AA6F73"
             android:layout_marginBottom="8dp"/>
 
-        <!-- RecyclerView for wishlist items -->
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/wishlistRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scrollbars="vertical"
             android:clipToPadding="false"
-            android:paddingBottom="70dp"/> <!-- Space for navbar -->
+            android:paddingBottom="70dp"/>
     </LinearLayout>
 
-    <!-- Navbar at the bottom -->
+
     <include
         android:id="@+id/navBarContainer"
         layout="@layout/nav_bar"

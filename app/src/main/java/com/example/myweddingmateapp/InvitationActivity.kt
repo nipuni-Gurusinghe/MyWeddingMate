@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myweddingmateapp.adapters.InvitationAdapter
 import com.example.myweddingmateapp.databinding.ActivityInvitationBinding
 import com.example.myweddingmateapp.models.Invitation
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -18,18 +19,21 @@ class InvitationActivity : AppCompatActivity() {
     private lateinit var binding: ActivityInvitationBinding
     private lateinit var prefs: PrefsHelper
     private val invitationList = mutableListOf<Invitation>()
-    private lateinit var db: FirebaseFirestore // Declare Firestore instance
+    private lateinit var db: FirebaseFirestore
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityInvitationBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         prefs = PrefsHelper.getInstance(this)
-        db = Firebase.firestore // Initialize Firestore
+        db = Firebase.firestore
+        auth = FirebaseAuth.getInstance()
 
         setupBackButton()
         setupRecyclerView()
-        fetchInvitationsFromFirestore() // Call function to fetch data from Firestore
+        fetchInvitationsFromFirestore()
     }
 
     private fun setupRecyclerView() {
@@ -37,11 +41,19 @@ class InvitationActivity : AppCompatActivity() {
         binding.invitationRecyclerView.adapter = InvitationAdapter(
             invitations = invitationList,
             onFavoriteClick = { invitation ->
+                val userId = auth.currentUser?.uid
+
+                if (userId == null) {
+
+                    Toast.makeText(this, "Please log in to favorite invitations.", Toast.LENGTH_SHORT).show()
+                    return@InvitationAdapter
+                }
+
                 invitation.isFavorite = !invitation.isFavorite
                 if (invitation.isFavorite) {
-                    prefs.addFavorite(invitation.id, "invitation")
+                    prefs.addFavorite(userId, invitation.id, "invitation")
                 } else {
-                    prefs.removeFavorite(invitation.id, "invitation")
+                    prefs.removeFavorite(userId, invitation.id, "invitation")
                 }
                 binding.invitationRecyclerView.adapter?.notifyItemChanged(
                     invitationList.indexOf(invitation)
@@ -54,11 +66,13 @@ class InvitationActivity : AppCompatActivity() {
     }
 
     private fun fetchInvitationsFromFirestore() {
-        db.collection("invitation") // Refer to your new collection
+        val currentUserId = auth.currentUser?.uid
+
+        db.collection("invitation")
             .get()
             .addOnSuccessListener { result ->
-                invitationList.clear() // Clear existing hardcoded data
-                val imageMap = createImageResourceMap() // Create map for image resources
+                invitationList.clear()
+                val imageMap = createImageResourceMap()
 
                 for (document in result) {
                     try {
@@ -69,8 +83,14 @@ class InvitationActivity : AppCompatActivity() {
                         val reviewCount = document.getLong("reviewCount")?.toInt() ?: 0
                         val websiteUrl = document.getString("websiteUrl") ?: ""
 
-                        // Get the actual drawable ID from the map, default to placeholder if not found
-                        val imageDrawableId = imageMap[imageResIdName] ?: R.drawable.placeholder_venue // IMPORTANT: Add a placeholder image in res/drawable
+                        val imageDrawableId = imageMap[imageResIdName] ?: R.drawable.placeholder_venue
+
+
+                        val isFavorite = if (currentUserId != null) {
+                            prefs.isFavorite(currentUserId, id, "invitation")
+                        } else {
+                            false
+                        }
 
                         val invitation = Invitation(
                             id = id,
@@ -79,7 +99,7 @@ class InvitationActivity : AppCompatActivity() {
                             rating = rating,
                             reviewCount = reviewCount,
                             websiteUrl = websiteUrl,
-                            isFavorite = prefs.isFavorite(id, "invitation")
+                            isFavorite = isFavorite
                         )
                         invitationList.add(invitation)
                     } catch (e: Exception) {
@@ -92,20 +112,17 @@ class InvitationActivity : AppCompatActivity() {
             .addOnFailureListener { exception ->
                 Log.w("InvitationActivity", "Error getting invitation documents: ", exception)
                 Toast.makeText(this, "Error loading invitation data: ${exception.message}", Toast.LENGTH_SHORT).show()
-                // Optionally, you could load hardcoded data as a fallback here
-                // loadInitialData() // Uncomment if you want fallback hardcoded data on Firestore failure
             }
     }
 
-    // Helper function to map image resource names (from Firestore) to their R.drawable IDs
+
     private fun createImageResourceMap(): Map<String, Int> {
         val map = mutableMapOf<String, Int>()
         map["card_craft"] = R.drawable.card_craft
         map["elegant_invites"] = R.drawable.elegant_invites
         map["wedding_card_co"] = R.drawable.wedding_card_co
         map["premium_cards"] = R.drawable.premium_cards
-        // Add all your invitation image resources here
-        // e.g., map["another_card_maker_image"] = R.drawable.another_card_maker_image
+
         return map
     }
 

@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myweddingmateapp.adapters.EntertainmentAdapter
 import com.example.myweddingmateapp.databinding.ActivityEntertainmentBinding
 import com.example.myweddingmateapp.models.Entertainment
+import com.google.firebase.auth.FirebaseAuth // ADD THIS IMPORT
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -18,18 +19,19 @@ class EntertainmentActivity : AppCompatActivity() {
     private lateinit var binding: ActivityEntertainmentBinding
     private lateinit var prefs: PrefsHelper
     private val entertainmentList = mutableListOf<Entertainment>()
-    private lateinit var db: FirebaseFirestore // Declare Firestore instance
-
+    private lateinit var db: FirebaseFirestore
+    private lateinit var auth: FirebaseAuth
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityEntertainmentBinding.inflate(layoutInflater)
         setContentView(binding.root)
         prefs = PrefsHelper.getInstance(this)
-        db = Firebase.firestore // Initialize Firestore
+        db = Firebase.firestore
+        auth = FirebaseAuth.getInstance()
 
         setupBackButton()
         setupRecyclerView()
-        fetchEntertainmentFromFirestore() // Call function to fetch data from Firestore
+        fetchEntertainmentFromFirestore()
     }
 
     private fun setupRecyclerView() {
@@ -37,11 +39,18 @@ class EntertainmentActivity : AppCompatActivity() {
         binding.entertainmentRecyclerView.adapter = EntertainmentAdapter(
             entertainments = entertainmentList,
             onFavoriteClick = { entertainment ->
+                val userId = auth.currentUser?.uid
+
+                if (userId == null) {
+                    Toast.makeText(this, "Please log in to favorite entertainment options.", Toast.LENGTH_SHORT).show()
+                    return@EntertainmentAdapter
+                }
+
                 entertainment.isFavorite = !entertainment.isFavorite
                 if (entertainment.isFavorite) {
-                    prefs.addFavorite(entertainment.id, "entertainment")
+                    prefs.addFavorite(userId, entertainment.id, "entertainment")
                 } else {
-                    prefs.removeFavorite(entertainment.id, "entertainment")
+                    prefs.removeFavorite(userId, entertainment.id, "entertainment")
                 }
                 binding.entertainmentRecyclerView.adapter?.notifyItemChanged(
                     entertainmentList.indexOf(entertainment)
@@ -54,11 +63,13 @@ class EntertainmentActivity : AppCompatActivity() {
     }
 
     private fun fetchEntertainmentFromFirestore() {
-        db.collection("entertainment") // Refer to your new collection
+        val currentUserId = auth.currentUser?.uid
+
+        db.collection("entertainment")
             .get()
             .addOnSuccessListener { result ->
-                entertainmentList.clear() // Clear existing hardcoded data
-                val imageMap = createImageResourceMap() // Create map for image resources
+                entertainmentList.clear()
+                val imageMap = createImageResourceMap()
 
                 for (document in result) {
                     try {
@@ -69,8 +80,7 @@ class EntertainmentActivity : AppCompatActivity() {
                         val reviewCount = document.getLong("reviewCount")?.toInt() ?: 0
                         val websiteUrl = document.getString("websiteUrl") ?: ""
 
-                        // Get the actual drawable ID from the map, default to placeholder if not found
-                        val imageDrawableId = imageMap[imageResIdName] ?: R.drawable.placeholder_venue // IMPORTANT: Add a placeholder image in res/drawable
+                        val imageDrawableId = imageMap[imageResIdName] ?: R.drawable.placeholder_venue
 
                         val entertainment = Entertainment(
                             id = id,
@@ -79,7 +89,11 @@ class EntertainmentActivity : AppCompatActivity() {
                             rating = rating,
                             reviewCount = reviewCount,
                             websiteUrl = websiteUrl,
-                            isFavorite = prefs.isFavorite(id, "entertainment")
+                            isFavorite = if (currentUserId != null) {
+                                prefs.isFavorite(currentUserId, id, "entertainment") // PASS USER ID
+                            } else {
+                                false
+                            }
                         )
                         entertainmentList.add(entertainment)
                     } catch (e: Exception) {
@@ -92,19 +106,15 @@ class EntertainmentActivity : AppCompatActivity() {
             .addOnFailureListener { exception ->
                 Log.w("EntertainmentActivity", "Error getting entertainment documents: ", exception)
                 Toast.makeText(this, "Error loading entertainment data: ${exception.message}", Toast.LENGTH_SHORT).show()
-                // Optionally, you could load hardcoded data as a fallback here
-                // loadInitialData() // Uncomment if you want fallback hardcoded data on Firestore failure
+
             }
     }
 
-    // Helper function to map image resource names (from Firestore) to their R.drawable IDs
     private fun createImageResourceMap(): Map<String, Int> {
         val map = mutableMapOf<String, Int>()
         map["dj_ash"] = R.drawable.dj_ash
         map["uma_dancing"] = R.drawable.uma_dancing
         map["budhawaththa"] = R.drawable.budhawaththa
-        // Add all your entertainment image resources here
-        // e.g., map["another_entertainer_image"] = R.drawable.another_entertainer_image
         return map
     }
 

@@ -8,7 +8,7 @@ import kotlinx.parcelize.Parcelize
 data class BridalWear(
     val id: String = "",
     val name: String = "",
-    val imageResId: String = "", // Changed to String to match ResourceHelper
+    val imageResId: String = "",
     val rating: Float = 0f,
     val reviewCount: Int = 0,
     val websiteUrl: String = "",

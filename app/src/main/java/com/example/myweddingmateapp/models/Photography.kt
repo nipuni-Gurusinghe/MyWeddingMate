@@ -7,7 +7,7 @@ import kotlinx.parcelize.Parcelize
 data class Photography(
     val id: String = "",
     val name: String = "",
-    val imageResId: String = "", // Changed to String
+    val imageResId: String = "",
     val rating: Float = 0f,
     val reviewCount: Int = 0,
     val websiteUrl: String = "",

@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myweddingmateapp.adapters.WeddingCarAdapter
 import com.example.myweddingmateapp.databinding.ActivityWeddingCarBinding
 import com.example.myweddingmateapp.models.WeddingCar
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -18,18 +19,21 @@ class WeddingCarActivity : AppCompatActivity() {
     private lateinit var binding: ActivityWeddingCarBinding
     private lateinit var prefs: PrefsHelper
     private val weddingCarList = mutableListOf<WeddingCar>()
-    private lateinit var db: FirebaseFirestore // Declare Firestore instance
+    private lateinit var db: FirebaseFirestore
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityWeddingCarBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         prefs = PrefsHelper.getInstance(this)
-        db = Firebase.firestore // Initialize Firestore
+        db = Firebase.firestore
+        auth = FirebaseAuth.getInstance()
 
         setupBackButton()
         setupRecyclerView()
-        fetchWeddingCarsFromFirestore() // Call function to fetch data from Firestore
+        fetchWeddingCarsFromFirestore()
     }
 
     private fun setupRecyclerView() {
@@ -37,11 +41,18 @@ class WeddingCarActivity : AppCompatActivity() {
         binding.weddingCarRecyclerView.adapter = WeddingCarAdapter(
             weddingCars = weddingCarList,
             onFavoriteClick = { weddingCar ->
+                val userId = auth.currentUser?.uid
+
+                if (userId == null) {
+                    Toast.makeText(this, "Please log in to favorite wedding cars.", Toast.LENGTH_SHORT).show()
+                    return@WeddingCarAdapter
+                }
+
                 weddingCar.isFavorite = !weddingCar.isFavorite
                 if (weddingCar.isFavorite) {
-                    prefs.addFavorite(weddingCar.id, "weddingCar")
+                    prefs.addFavorite(userId, weddingCar.id, "weddingCar")
                 } else {
-                    prefs.removeFavorite(weddingCar.id, "weddingCar")
+                    prefs.removeFavorite(userId, weddingCar.id, "weddingCar")
                 }
                 binding.weddingCarRecyclerView.adapter?.notifyItemChanged(
                     weddingCarList.indexOf(weddingCar)
@@ -54,11 +65,13 @@ class WeddingCarActivity : AppCompatActivity() {
     }
 
     private fun fetchWeddingCarsFromFirestore() {
-        db.collection("wedding-car") // Refer to your new collection
+        val currentUserId = auth.currentUser?.uid
+
+        db.collection("wedding-car")
             .get()
             .addOnSuccessListener { result ->
-                weddingCarList.clear() // Clear existing hardcoded data
-                val imageMap = createImageResourceMap() // Create map for image resources
+                weddingCarList.clear()
+                val imageMap = createImageResourceMap()
 
                 for (document in result) {
                     try {
@@ -69,8 +82,7 @@ class WeddingCarActivity : AppCompatActivity() {
                         val reviewCount = document.getLong("reviewCount")?.toInt() ?: 0
                         val websiteUrl = document.getString("websiteUrl") ?: ""
 
-                        // Get the actual drawable ID from the map, default to placeholder if not found
-                        val imageDrawableId = imageMap[imageResIdName] ?: R.drawable.placeholder_venue // IMPORTANT: Add a placeholder image in res/drawable
+                        val imageDrawableId = imageMap[imageResIdName] ?: R.drawable.placeholder_venue
 
                         val weddingCar = WeddingCar(
                             id = id,
@@ -79,7 +91,11 @@ class WeddingCarActivity : AppCompatActivity() {
                             rating = rating,
                             reviewCount = reviewCount,
                             websiteUrl = websiteUrl,
-                            isFavorite = prefs.isFavorite(id, "weddingCar")
+                            isFavorite = if (currentUserId != null) {
+                                prefs.isFavorite(currentUserId, id, "weddingCar")
+                            } else {
+                                false
+                            }
                         )
                         weddingCarList.add(weddingCar)
                     } catch (e: Exception) {
@@ -92,20 +108,16 @@ class WeddingCarActivity : AppCompatActivity() {
             .addOnFailureListener { exception ->
                 Log.w("WeddingCarActivity", "Error getting wedding car documents: ", exception)
                 Toast.makeText(this, "Error loading wedding car data: ${exception.message}", Toast.LENGTH_SHORT).show()
-                // Optionally, you could load hardcoded data as a fallback here
-                // loadInitialData() // Uncomment if you want fallback hardcoded data on Firestore failure
+
             }
     }
 
-    // Helper function to map image resource names (from Firestore) to their R.drawable IDs
     private fun createImageResourceMap(): Map<String, Int> {
         val map = mutableMapOf<String, Int>()
         map["malkey_car"] = R.drawable.malkey_car
         map["cason_car"] = R.drawable.cason_car
         map["master_car"] = R.drawable.master_car
-        map["premium_cards"] = R.drawable.premium_cards // Assuming premium_cards image is also used for cars
-        // Add all your wedding car image resources here
-        // e.g., map["another_car_image"] = R.drawable.another_car_image
+        map["premium_cards"] = R.drawable.premium_cards
         return map
     }
 

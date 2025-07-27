@@ -1,9 +1,9 @@
 package com.example.myweddingmateapp.models
 
 data class WeddingCar(
-    val id: String = "", // Added default empty string for Firebase deserialization
+    val id: String = "",
     val name: String = "",
-    val imageResId: Int = 0, // This will be the drawable ID from R.drawable, not a String
+    val imageResId: Int = 0,
     val rating: Float = 0.0f,
     val reviewCount: Int = 0,
     val websiteUrl: String = "",

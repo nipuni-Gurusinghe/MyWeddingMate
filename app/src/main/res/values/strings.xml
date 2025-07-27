@@ -90,6 +90,7 @@
     <string name="wedding_cars">Wedding Cars</string>
     <string name="wedding_car_image_desc">Wedding car service image</string>
     <string name="beautician_image_desc">Bridal beautician photo</string>
+    <string name="please_log_in_to_view_favorites">Please log in to view your favorites.</string>
 
 </resources>
 
