@@ -1,6 +1,5 @@
 package com.example.myweddingmateapp
 
-
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
@@ -16,12 +15,12 @@ import com.example.myweddingmateapp.models.WeddingPlanner
 import com.example.myweddingmateapp.repository.PlannerProfileBridge
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.progressindicator.CircularProgressIndicator
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-
+import java.util.*
 
 // select wedding planners
-
 class WeddingPlannersActivity : AppCompatActivity() {
 
     companion object {
@@ -43,6 +42,7 @@ class WeddingPlannersActivity : AppCompatActivity() {
 
     // Firebase
     private lateinit var firestore: FirebaseFirestore
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,9 +55,7 @@ class WeddingPlannersActivity : AppCompatActivity() {
         loadWeddingPlanners()
     }
 
-
-//     Initialize view
-
+    // Initialize view
     private fun initializeViews() {
         toolbar = findViewById(R.id.toolbar)
         recyclerViewPlanners = findViewById(R.id.recyclerViewPlanners)
@@ -65,9 +63,7 @@ class WeddingPlannersActivity : AppCompatActivity() {
         emptyView = findViewById(R.id.emptyView)
     }
 
-
-//     Setup toolbar with back navigation
-
+    // Setup toolbar with back navigation
     private fun setupToolbar() {
         setSupportActionBar(toolbar)
         supportActionBar?.apply {
@@ -81,9 +77,7 @@ class WeddingPlannersActivity : AppCompatActivity() {
         }
     }
 
-
-//      Setup RecyclerView with adapter
-
+    // Setup RecyclerView with adapter
     private fun setupRecyclerView() {
         plannerAdapter = WeddingPlannerAdapter(
             context = this,
@@ -103,16 +97,13 @@ class WeddingPlannersActivity : AppCompatActivity() {
         }
     }
 
-
-//     Initialize Firebase Firestore
-
+    // Initialize Firebase Firestore and Auth
     private fun initializeFirebase() {
         firestore = FirebaseFirestore.getInstance()
+        auth = FirebaseAuth.getInstance()
     }
 
-
-//      Load wedding planners from Firebase
-
+    // Load wedding planners from Firebase
     private fun loadWeddingPlanners() {
         showLoading(true)
 
@@ -143,9 +134,7 @@ class WeddingPlannersActivity : AppCompatActivity() {
             }
     }
 
-
-//      Update UI based on data state
-
+    // Update UI based on data state
     private fun updateUI() {
         showLoading(false)
 
@@ -157,31 +146,128 @@ class WeddingPlannersActivity : AppCompatActivity() {
         }
     }
 
-
-//      Show/hide loading indicator
-
+    // Show/hide loading indicator
     private fun showLoading(show: Boolean) {
         progressIndicator.visibility = if (show) View.VISIBLE else View.GONE
         recyclerViewPlanners.visibility = if (show) View.GONE else View.VISIBLE
     }
 
-
-//      Show/hide empty state
-
+    // Show/hide empty state
     private fun showEmptyState(show: Boolean) {
         emptyView.visibility = if (show) View.VISIBLE else View.GONE
         recyclerViewPlanners.visibility = if (show) View.GONE else View.VISIBLE
     }
 
-
-//      Handle planner selection
-
+    // Handle planner selection and store in Firestore (ONE planner per user)
     private fun selectPlanner(planner: WeddingPlanner) {
         Log.d(TAG, "Planner selected: ${planner.name}")
+
+        // Check if user is authenticated
+        val currentUser = auth.currentUser
+        if (currentUser == null) {
+            showError("Please login to select a planner")
+            return
+        }
+
+        // Show loading while saving
+        showLoading(true)
+
+        // First, check if user already has a selected planner
+        firestore.collection("selected_planners")
+            .whereEqualTo("userId", currentUser.uid)
+            .get()
+            .addOnSuccessListener { documents ->
+                if (!documents.isEmpty) {
+                    // User already has a selection - UPDATE it
+                    val existingDoc = documents.documents[0] // Get the first (should be only) document
+                    updateExistingSelection(existingDoc.id, planner)
+                } else {
+                    // User has no selection - CREATE new one
+                    createNewSelection(planner)
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.e(TAG, "Error checking existing selection", exception)
+                showLoading(false)
+                showError("Failed to check existing selection. Please try again.")
+            }
+    }
+
+    // Create new selection for user
+    private fun createNewSelection(planner: WeddingPlanner) {
+        val currentUser = auth.currentUser ?: return
+
+        val selectionData = hashMapOf(
+            "userId" to currentUser.uid,
+            "plannerId" to planner.id,
+            "plannerName" to planner.name,
+            "plannerEmail" to planner.email,
+            "plannerPhone" to planner.phone,
+            "plannerLocation" to planner.location,
+            "plannerRating" to planner.rating,
+            "plannerPriceRange" to planner.priceRange,
+            "selectedAt" to Date(),
+            "status" to "selected",
+            "plannerData" to planner
+        )
+
+        firestore.collection("selected_planners")
+            .add(selectionData)
+            .addOnSuccessListener { documentReference ->
+                Log.d(TAG, "New planner selection created with ID: ${documentReference.id}")
+                handleSelectionSuccess(planner, documentReference.id)
+            }
+            .addOnFailureListener { exception ->
+                Log.e(TAG, "Error creating planner selection", exception)
+                showLoading(false)
+                showError("Failed to select planner. Please try again.")
+            }
+    }
+
+    // Update existing selection with new planner
+    private fun updateExistingSelection(documentId: String, planner: WeddingPlanner) {
+        val updateData = hashMapOf<String, Any>(
+            "plannerId" to planner.id,
+            "plannerName" to planner.name,
+            "plannerEmail" to planner.email,
+            "plannerPhone" to planner.phone,
+            "plannerLocation" to planner.location,
+            "plannerRating" to planner.rating,
+            "plannerPriceRange" to planner.priceRange,
+            "updatedAt" to Date(),
+            "status" to "selected", // Reset to selected if it was confirmed/cancelled
+            "plannerData" to planner
+        )
+
+        firestore.collection("selected_planners")
+            .document(documentId)
+            .update(updateData)
+            .addOnSuccessListener {
+                Log.d(TAG, "Existing planner selection updated with ID: $documentId")
+                handleSelectionSuccess(planner, documentId)
+            }
+            .addOnFailureListener { exception ->
+                Log.e(TAG, "Error updating planner selection", exception)
+                showLoading(false)
+                showError("Failed to update planner selection. Please try again.")
+            }
+    }
+
+    // Handle successful selection (common for both create and update)
+    private fun handleSelectionSuccess(planner: WeddingPlanner, selectionId: String) {
+        showLoading(false)
+
+        // Show success message
+        Toast.makeText(
+            this,
+            "Successfully selected ${planner.name}!",
+            Toast.LENGTH_SHORT
+        ).show()
 
         // Create result intent
         val resultIntent = Intent().apply {
             putExtra(EXTRA_SELECTED_PLANNER, planner)
+            putExtra("selection_id", selectionId)
         }
 
         // Set result and finish activity
@@ -192,9 +278,33 @@ class WeddingPlannersActivity : AppCompatActivity() {
         overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
     }
 
+    // Check if user already has a selected planner and get details
+    private fun getUserSelectedPlanner(callback: (WeddingPlanner?, String?) -> Unit) {
+        val currentUser = auth.currentUser
+        if (currentUser == null) {
+            callback(null, null)
+            return
+        }
 
-//     View planner profile in detail
+        firestore.collection("selected_planners")
+            .whereEqualTo("userId", currentUser.uid)
+            .get()
+            .addOnSuccessListener { documents ->
+                if (!documents.isEmpty) {
+                    val document = documents.documents[0]
+                    val plannerData = document.get("plannerData") as? WeddingPlanner
+                    callback(plannerData, document.id)
+                } else {
+                    callback(null, null)
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.e(TAG, "Error checking user's selected planner", exception)
+                callback(null, null)
+            }
+    }
 
+    // View planner profile in detail
     private fun viewPlannerProfile(planner: WeddingPlanner) {
         Log.d(TAG, "Viewing profile for: ${planner.name}")
 
@@ -210,43 +320,32 @@ class WeddingPlannersActivity : AppCompatActivity() {
         }
     }
 
-
     private fun showError(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
-
-//      back btn press
-
+    // back btn press
     override fun onBackPressed() {
         super.onBackPressed()
         overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
     }
 
-
-//      Refresh planners list
-
+    // Refresh planners list
     private fun refreshPlanners() {
         loadWeddingPlanners()
     }
 
-
-//      Filter planners by availability
-
+    // Filter planners by availability
     private fun filterAvailablePlanners() {
         plannerAdapter.filterByAvailability(true)
     }
 
-
-//      Sort planners by rating
-
+    // Sort planners by rating
     private fun sortPlannersByRating() {
         plannerAdapter.sortByRating()
     }
 
-
-//     by experience
-
+    // by experience
     private fun sortPlannersByExperience() {
         plannerAdapter.sortByExperience()
     }

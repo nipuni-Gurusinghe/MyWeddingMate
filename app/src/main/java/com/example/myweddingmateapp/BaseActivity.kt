@@ -65,9 +65,9 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     private fun setNavigationItemSelected(layout: LinearLayout) {
-        (layout.getChildAt(0) as? ImageView)?.setColorFilter(getColor(R.color.white))
+        (layout.getChildAt(0) as? ImageView)?.setColorFilter(getColor(R.color.black))
         (layout.getChildAt(1) as? TextView)?.apply {
-            setTextColor(getColor(R.color.white))
+            setTextColor(getColor(R.color.black))
             setTypeface(null, Typeface.BOLD)
         }
     }

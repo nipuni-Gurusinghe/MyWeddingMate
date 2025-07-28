@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.firebase.android)
+    alias(libs.plugins.firebase.android) // This already includes google-services plugin
     id("kotlin-parcelize")
 }
 
@@ -56,10 +56,19 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.coordinatorlayout)
-    implementation(libs.firebase.bom)
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.firestore)
-    implementation(libs.firebase.storage)
+
+    // Firebase BOM - this manages all Firebase library versions
+    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+
+    // Firebase libraries - no need to specify versions when using BOM
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-storage-ktx")
+
+    // Coroutines for Firebase
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+
+    // Other libraries
     implementation(libs.glide)
     implementation(libs.gson)
 
