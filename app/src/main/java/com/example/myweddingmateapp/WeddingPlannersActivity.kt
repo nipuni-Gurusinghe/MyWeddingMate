@@ -20,7 +20,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import java.util.*
 
-// select wedding planners
+
 class WeddingPlannersActivity : AppCompatActivity() {
 
     companion object {
@@ -30,7 +30,7 @@ class WeddingPlannersActivity : AppCompatActivity() {
         const val EXTRA_PLANNER_FOR_PROFILE = "planner_for_profile"
     }
 
-    // Views
+    
     private lateinit var toolbar: MaterialToolbar
     private lateinit var recyclerViewPlanners: RecyclerView
     private lateinit var progressIndicator: CircularProgressIndicator
@@ -304,7 +304,7 @@ class WeddingPlannersActivity : AppCompatActivity() {
             }
     }
 
-    // View planner profile in detail
+    // View  profile
     private fun viewPlannerProfile(planner: WeddingPlanner) {
         Log.d(TAG, "Viewing profile for: ${planner.name}")
 
@@ -324,28 +324,28 @@ class WeddingPlannersActivity : AppCompatActivity() {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
-    // back btn press
+    // back btn
     override fun onBackPressed() {
         super.onBackPressed()
         overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
     }
 
-    // Refresh planners list
+
     private fun refreshPlanners() {
         loadWeddingPlanners()
     }
 
-    // Filter planners by availability
+
     private fun filterAvailablePlanners() {
         plannerAdapter.filterByAvailability(true)
     }
 
-    // Sort planners by rating
+
     private fun sortPlannersByRating() {
         plannerAdapter.sortByRating()
     }
 
-    // by experience
+
     private fun sortPlannersByExperience() {
         plannerAdapter.sortByExperience()
     }

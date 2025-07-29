@@ -24,9 +24,7 @@ class WeddingPlannerAdapter(
         private const val TAG = "WeddingPlannerAdapter"
     }
 
-    /**
-     * ViewHolder for planner items
-     */
+//    viewholder
     inner class PlannerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val profileImage: ImageView = itemView.findViewById(R.id.imgPlannerProfile)
         val plannerName: TextView = itemView.findViewById(R.id.tvPlannerName)
@@ -42,29 +40,28 @@ class WeddingPlannerAdapter(
         val cardContainer: androidx.cardview.widget.CardView = itemView.findViewById(R.id.cardPlannerContainer)
 
         fun bind(planner: WeddingPlanner) {
-            // Set planner name
             plannerName.text = planner.name
 
-            // Set rating and reviews
+
             plannerRating.text = "${planner.getRatingText()} ${planner.getReviewText()}"
 
-            // Set location
+
             plannerLocation.text = planner.location.ifEmpty { "Location not specified" }
 
-            // Set experience
+
             plannerExperience.text = planner.getExperienceText()
 
-            // Set specialties
+
             plannerSpecialties.text = planner.getSpecialtiesText()
 
-            // Set price range
+
             plannerPriceRange.text = if (planner.priceRange.isNotEmpty()) {
                 "Budget: ${planner.priceRange}"
             } else {
                 "Price: Contact for quote"
             }
 
-            // Set bio (truncated)
+
             plannerBio.text = if (planner.bio.isNotEmpty()) {
                 if (planner.bio.length > 120) {
                     "${planner.bio.substring(0, 120)}..."
@@ -75,17 +72,17 @@ class WeddingPlannerAdapter(
                 "Professional wedding planner dedicated to making your special day perfect."
             }
 
-            // Set availability badge
+
             availabilityBadge.text = planner.getAvailabilityText()
             availabilityBadge.setBackgroundResource(
                 if (planner.isAvailable) R.drawable.bg_available_badge
                 else R.drawable.bg_unavailable_badge
             )
 
-            // Load profile image
+
             loadProfileImage(planner.profileImageUrl)
 
-            // Set click listeners
+
             btnSelectPlanner.setOnClickListener {
                 onPlannerClick(planner)
             }
@@ -98,7 +95,7 @@ class WeddingPlannerAdapter(
                 onViewProfileClick(planner)
             }
 
-            // Disable select button if not available
+
             btnSelectPlanner.isEnabled = planner.isAvailable
             btnSelectPlanner.alpha = if (planner.isAvailable) 1.0f else 0.6f
         }
@@ -112,7 +109,7 @@ class WeddingPlannerAdapter(
                     .error(R.drawable.ic_person)
                     .into(profileImage)
             } else {
-                // Set default profile image
+
                 profileImage.setImageResource(R.drawable.ic_person)
             }
         }
@@ -130,26 +127,24 @@ class WeddingPlannerAdapter(
 
     override fun getItemCount(): Int = planners.size
 
-    /**
-     * Update the planners list
-     */
+//    update list
     fun updatePlanners(newPlanners: List<WeddingPlanner>) {
         planners.clear()
         planners.addAll(newPlanners)
         notifyDataSetChanged()
     }
 
-    /**
-     * Add a single planner
-     */
+
+     //Add 1 planner
+
     fun addPlanner(planner: WeddingPlanner) {
         planners.add(planner)
         notifyItemInserted(planners.size - 1)
     }
 
-    /**
-     * Remove a planner
-     */
+
+     //remove  planner
+
     fun removePlanner(plannerId: String) {
         val position = planners.indexOfFirst { it.id == plannerId }
         if (position != -1) {
@@ -158,9 +153,9 @@ class WeddingPlannerAdapter(
         }
     }
 
-    /**
-     * Update a specific planner
-     */
+
+     //update planner
+
     fun updatePlanner(updatedPlanner: WeddingPlanner) {
         val position = planners.indexOfFirst { it.id == updatedPlanner.id }
         if (position != -1) {
@@ -169,25 +164,21 @@ class WeddingPlannerAdapter(
         }
     }
 
-    /**
-     * Get planner at position
-     */
+
+     //Get planner at position
+
     fun getPlannerAt(position: Int): WeddingPlanner? {
         return if (position in 0 until planners.size) planners[position] else null
     }
 
-    /**
-     * Clear all planners
-     */
+
     fun clearPlanners() {
         val size = planners.size
         planners.clear()
         notifyItemRangeRemoved(0, size)
     }
 
-    /**
-     * Filter planners by availability
-     */
+
     fun filterByAvailability(availableOnly: Boolean) {
         val filteredPlanners = if (availableOnly) {
             planners.filter { it.isAvailable }
@@ -197,17 +188,13 @@ class WeddingPlannerAdapter(
         updatePlanners(filteredPlanners)
     }
 
-    /**
-     * Sort planners by rating (high to low)
-     */
+
     fun sortByRating() {
         planners.sortByDescending { it.rating }
         notifyDataSetChanged()
     }
 
-    /**
-     * Sort planners by experience (high to low)
-     */
+
     fun sortByExperience() {
         planners.sortByDescending { it.experience }
         notifyDataSetChanged()

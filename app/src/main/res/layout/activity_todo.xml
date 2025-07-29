@@ -5,7 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- NavBar at the bottom -->
+    <!--    Chat with planner XML-->
+
+
     <include
         android:id="@+id/navBar"
         layout="@layout/nav_bar"

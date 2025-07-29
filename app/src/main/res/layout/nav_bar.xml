@@ -32,6 +32,7 @@
             android:textSize="12sp" />
     </LinearLayout>
 
+<!--    Chat with planner ID-->
     <LinearLayout
         android:id="@+id/navTodo"
         android:layout_width="0dp"
@@ -43,13 +44,13 @@
         <ImageView
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@drawable/ic_todo"
+            android:src="@drawable/ic_chat"
             app:tint="#4B0000" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="To-do List"
+            android:text="chat"
             android:textColor="#4B0000"
             android:textSize="12sp" />
     </LinearLayout>
