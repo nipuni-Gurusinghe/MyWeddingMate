@@ -1,6 +1,7 @@
 package com.example.myweddingmateapp
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -28,8 +29,9 @@ class RegisterActivity : AppCompatActivity() {
         val termsCheckBox = findViewById<CheckBox>(R.id.termsCheckBox)
         val registerButton = findViewById<Button>(R.id.registerButton)
         val loginTextView = findViewById<TextView>(R.id.loginTextView)
+        val vendorRegisterTextView = findViewById<TextView>(R.id.vendorRegisterTextView)
 
-        val roles = arrayOf("User", "Wedding Planner", "Vendor")
+        val roles = arrayOf("User", "Wedding Planner")
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, roles)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         roleSpinner.adapter = adapter
@@ -91,6 +93,13 @@ class RegisterActivity : AppCompatActivity() {
         loginTextView.setOnClickListener {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
+        }
+
+        vendorRegisterTextView.setOnClickListener {
+            // Open the Google Form in browser
+            val formUri = Uri.parse("https://forms.gle/iJbjzNtGdoS7pbP17")
+            val intent = Intent(Intent.ACTION_VIEW, formUri)
+            startActivity(intent)
         }
     }
 }

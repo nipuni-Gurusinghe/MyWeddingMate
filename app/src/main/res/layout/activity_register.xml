@@ -153,14 +153,13 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/loginButton" />
 
-
-
     <!-- Login Link -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center">
+        android:gravity="center"
+        android:layout_marginBottom="8dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -173,6 +172,29 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="LOGIN"
+            android:textColor="@color/button_color"
+            android:textStyle="bold"
+            android:layout_marginLeft="4dp"/>
+    </LinearLayout>
+
+    <!-- Vendor Registration Link -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Are you a Vendor?"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/vendorRegisterTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="REGISTER HERE"
             android:textColor="@color/button_color"
             android:textStyle="bold"
             android:layout_marginLeft="4dp"/>
