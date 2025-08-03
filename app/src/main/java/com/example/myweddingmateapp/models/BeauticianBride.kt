@@ -5,7 +5,7 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class BeauticianBride(
-    val id: String = "",
+    var id: String = "",  // Change from val to var
     val name: String = "",
     val imageResId: String = "",
     val rating: Float = 0f,

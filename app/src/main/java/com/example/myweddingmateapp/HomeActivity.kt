@@ -159,13 +159,13 @@ class HomeActivity : BaseActivity() {
 
     private fun navigateToVendorSelection() {
         try {
-            val intent = Intent(this, VendorSelectionActivity::class.java)
+            val intent = Intent(this, WishlistActivity::class.java) // Change to your Wishlist activity class
             vendorsLauncher.launch(intent)
             overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
-            Log.d(TAG, "Navigating to Vendor Selection")
+            Log.d(TAG, "Navigating to Wishlist")
         } catch (e: Exception) {
-            Log.e(TAG, "Error navigating to Vendor Selection", e)
-            showToast("Vendor Selection feature coming soon!")
+            Log.e(TAG, "Error navigating to Wishlist", e)
+            showToast("Unable to open Wishlist")
         }
     }
 
