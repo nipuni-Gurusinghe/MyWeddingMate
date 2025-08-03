@@ -78,9 +78,9 @@
         <activity
             android:name=".InvitationActivity"
             android:exported="false" />
-        <activity
-            android:name=".FavoritesActivity"
-            android:exported="false" />
+<!--        <activity-->
+<!--            android:name=".FavoritesActivity"-->
+<!--            android:exported="false" />-->
 
 
         <activity android:name=".LoginActivity"
@@ -88,6 +88,9 @@
 
         <activity android:name=".RegisterActivity"
             android:exported="false"/>
+        <activity
+            android:name=".FavoritesActivity"
+            android:exported="false" />
 
         <activity android:name=".PlannerDashboardActivity"
             android:exported="false" >

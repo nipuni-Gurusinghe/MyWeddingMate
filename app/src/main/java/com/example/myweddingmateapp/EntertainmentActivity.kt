@@ -3,65 +3,119 @@ package com.example.myweddingmateapp
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.widget.ImageButton
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.myweddingmateapp.adapters.EntertainmentAdapter
 import com.example.myweddingmateapp.databinding.ActivityEntertainmentBinding
+import com.example.myweddingmateapp.models.Entertainment
+import com.google.firebase.auth.FirebaseAuth // ADD THIS IMPORT
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 class EntertainmentActivity : AppCompatActivity() {
     private lateinit var binding: ActivityEntertainmentBinding
     private lateinit var prefs: PrefsHelper
-    private val favoriteMap = mutableMapOf<String, Boolean>()
-
+    private val entertainmentList = mutableListOf<Entertainment>()
+    private lateinit var db: FirebaseFirestore
+    private lateinit var auth: FirebaseAuth
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityEntertainmentBinding.inflate(layoutInflater)
         setContentView(binding.root)
         prefs = PrefsHelper.getInstance(this)
+        db = Firebase.firestore
+        auth = FirebaseAuth.getInstance()
 
         setupBackButton()
-        loadInitialFavorites()
-        setupFavoriteButtons()
-        setupButtonClickListeners()
+        setupRecyclerView()
+        fetchEntertainmentFromFirestore()
     }
 
-    private fun loadInitialFavorites() {
-        val savedFavorites = prefs.getFavorites()
-        listOf("djAsh", "umaDancing", "budhawaththa").forEach { entertainer ->
-            favoriteMap[entertainer] = savedFavorites.contains(entertainer)
-            updateHeartIcon(entertainer)
-        }
-    }
+    private fun setupRecyclerView() {
+        binding.entertainmentRecyclerView.layoutManager = LinearLayoutManager(this)
+        binding.entertainmentRecyclerView.adapter = EntertainmentAdapter(
+            entertainments = entertainmentList,
+            onFavoriteClick = { entertainment ->
+                val userId = auth.currentUser?.uid
 
-    private fun updateHeartIcon(entertainerKey: String) {
-        val button = when(entertainerKey) {
-            "djAsh" -> binding.djAshFavorite
-            "umaDancing" -> binding.umaFavorite
-            "budhawaththa" -> binding.budhawaththaFavorite
-            else -> null
-        }
+                if (userId == null) {
+                    Toast.makeText(this, "Please log in to favorite entertainment options.", Toast.LENGTH_SHORT).show()
+                    return@EntertainmentAdapter
+                }
 
-        button?.setImageResource(
-            if (favoriteMap[entertainerKey] == true) R.drawable.ic_heart_filled
-            else R.drawable.ic_heart_outline
+                entertainment.isFavorite = !entertainment.isFavorite
+                if (entertainment.isFavorite) {
+                    prefs.addFavorite(userId, entertainment.id, "entertainment")
+                } else {
+                    prefs.removeFavorite(userId, entertainment.id, "entertainment")
+                }
+                binding.entertainmentRecyclerView.adapter?.notifyItemChanged(
+                    entertainmentList.indexOf(entertainment)
+                )
+            },
+            onWebsiteClick = { url ->
+                openWebsite(url)
+            }
         )
     }
 
-    private fun setupButtonClickListeners() {
-        // DJ Ash
-        binding.djAshButton.setOnClickListener {
-            openWebsite("https://djash.lk/")
-        }
+    private fun fetchEntertainmentFromFirestore() {
+        val currentUserId = auth.currentUser?.uid
 
-        // Uma Dancing
-        binding.umaButton.setOnClickListener {
-            openWebsite("http://www.umadancing.com/")
-        }
+        db.collection("entertainment")
+            .get()
+            .addOnSuccessListener { result ->
+                entertainmentList.clear()
+                val imageMap = createImageResourceMap()
 
-        // Budhawaththa Dancing Academy
-        binding.budhawaththaButton.setOnClickListener {
-            openWebsite("https://budawattadancetroupe.com/")
-        }
+                for (document in result) {
+                    try {
+                        val id = document.id
+                        val name = document.getString("name") ?: ""
+                        val imageResIdName = document.getString("imageResId") ?: ""
+                        val rating = document.getDouble("rating")?.toFloat() ?: 0.0f
+                        val reviewCount = document.getLong("reviewCount")?.toInt() ?: 0
+                        val websiteUrl = document.getString("websiteUrl") ?: ""
+
+                        val imageDrawableId = imageMap[imageResIdName] ?: R.drawable.placeholder_venue
+
+                        val entertainment = Entertainment(
+                            id = id,
+                            name = name,
+                            imageResId = imageDrawableId,
+                            rating = rating,
+                            reviewCount = reviewCount,
+                            websiteUrl = websiteUrl,
+                            isFavorite = if (currentUserId != null) {
+                                prefs.isFavorite(currentUserId, id, "entertainment") // PASS USER ID
+                            } else {
+                                false
+                            }
+                        )
+                        entertainmentList.add(entertainment)
+                    } catch (e: Exception) {
+                        Log.e("EntertainmentActivity", "Error parsing document ${document.id}: ${e.message}", e)
+                        Toast.makeText(this, "Error parsing data for ${document.id}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                binding.entertainmentRecyclerView.adapter?.notifyDataSetChanged()
+            }
+            .addOnFailureListener { exception ->
+                Log.w("EntertainmentActivity", "Error getting entertainment documents: ", exception)
+                Toast.makeText(this, "Error loading entertainment data: ${exception.message}", Toast.LENGTH_SHORT).show()
+
+            }
+    }
+
+    private fun createImageResourceMap(): Map<String, Int> {
+        val map = mutableMapOf<String, Int>()
+        map["dj_ash"] = R.drawable.dj_ash
+        map["uma_dancing"] = R.drawable.uma_dancing
+        map["budhawaththa"] = R.drawable.budhawaththa
+        return map
     }
 
     private fun openWebsite(url: String) {
@@ -77,26 +131,5 @@ class EntertainmentActivity : AppCompatActivity() {
         binding.backButton.setOnClickListener {
             finish()
         }
-    }
-
-    private fun setupFavoriteButtons() {
-        binding.djAshFavorite.setOnClickListener {
-            toggleFavorite("djAsh", binding.djAshFavorite)
-        }
-        binding.umaFavorite.setOnClickListener {
-            toggleFavorite("umaDancing", binding.umaFavorite)
-        }
-        binding.budhawaththaFavorite.setOnClickListener {
-            toggleFavorite("budhawaththa", binding.budhawaththaFavorite)
-        }
-    }
-
-    private fun toggleFavorite(entertainerKey: String, button: ImageButton) {
-        val isFavorite = favoriteMap[entertainerKey] ?: false
-        favoriteMap[entertainerKey] = !isFavorite
-        updateHeartIcon(entertainerKey)
-
-        val favorites = favoriteMap.filter { it.value }.keys.toMutableSet()
-        prefs.saveFavorites(favorites)
     }
 }

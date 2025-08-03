@@ -1,191 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FFF3F3"
-    android:fillViewport="true">
+    android:orientation="vertical">
+
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:padding="16dp">
 
-        <!-- Toolbar with back button -->
-        <LinearLayout
-            android:layout_width="match_parent"
+        <ImageButton
+            android:id="@+id/backButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_back"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/back_button_description"/>
+
+        <TextView
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="16dp">
-
-            <ImageButton
-                android:id="@+id/backButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:src="@drawable/ic_back"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Back"/>
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Bridal Wear"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:gravity="center"
-                android:textColor="#8A4C7D"/>
-        </LinearLayout>
-
-        <!-- Amilani Perera -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/amilaniCard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/amilani_bwear"
-                    android:contentDescription="Amilani Perera Bridal Wear"/>
-
-                <!-- Favorite Heart Button -->
-                <ImageButton
-                    android:id="@+id/amilaniFavorite"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_margin="8dp"
-                    android:src="@drawable/ic_heart_outline"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="Add to favorites"/>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Amilani Perera"
-                        android:textSize="18sp"
-                        android:textStyle="bold"/>
-
-                    <RatingBar
-                        android:id="@+id/amilaniRating"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:numStars="5"
-                        android:rating="4.7"
-                        android:stepSize="0.1"
-                        android:isIndicator="true"
-                        android:layout_marginTop="8dp"/>
-
-                    <TextView
-                        android:id="@+id/amilaniRatingText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Rating: 4.7 (420+ reviews)"
-                        android:textSize="14sp"
-                        android:layout_marginTop="4dp"/>
-
-                    <Button
-                        android:id="@+id/amilaniButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Visit Website"
-                        android:layout_marginTop="12dp"
-                        android:backgroundTint="#8A4C7D"
-                        android:textColor="#FFFFFF"/>
-                </LinearLayout>
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <!-- Bridezone -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/bridezoneCard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/bridezone_bware"
-                    android:contentDescription="Bridezone Bridal Wear"/>
-
-                <!-- Favorite Heart Button -->
-                <ImageButton
-                    android:id="@+id/bridezoneFavorite"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_margin="8dp"
-                    android:src="@drawable/ic_heart_outline"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="Add to favorites"/>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Bridezone"
-                        android:textSize="18sp"
-                        android:textStyle="bold"/>
-
-                    <RatingBar
-                        android:id="@+id/bridezoneRating"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:numStars="5"
-                        android:rating="4.5"
-                        android:stepSize="0.1"
-                        android:isIndicator="true"
-                        android:layout_marginTop="8dp"/>
-
-                    <TextView
-                        android:id="@+id/bridezoneRatingText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Rating: 4.5 (380+ reviews)"
-                        android:textSize="14sp"
-                        android:layout_marginTop="4dp"/>
-
-                    <Button
-                        android:id="@+id/bridezoneButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Visit Website"
-                        android:layout_marginTop="12dp"
-                        android:backgroundTint="#8A4C7D"
-                        android:textColor="#FFFFFF"/>
-                </LinearLayout>
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
+            android:layout_weight="1"
+            android:text="Bridal Wear"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:textColor="#8A4C7D"/>
     </LinearLayout>
-</ScrollView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/bridalWearRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp"
+        android:clipToPadding="false"/>
+</LinearLayout>

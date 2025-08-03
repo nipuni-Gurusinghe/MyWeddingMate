@@ -3,76 +3,89 @@ package com.example.myweddingmateapp
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.widget.ImageButton
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.myweddingmateapp.adapters.VenuesAdapter
 import com.example.myweddingmateapp.databinding.ActivityVenuesBinding
+import com.example.myweddingmateapp.models.Venue
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 class VenuesActivity : AppCompatActivity() {
     private lateinit var binding: ActivityVenuesBinding
     private lateinit var prefs: PrefsHelper
-    private val favoriteMap = mutableMapOf<String, Boolean>()
+    private val venuesList = mutableListOf<Venue>()
+    private lateinit var db: FirebaseFirestore
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityVenuesBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         prefs = PrefsHelper.getInstance(this)
+        db = Firebase.firestore
+        auth = FirebaseAuth.getInstance()
 
         setupBackButton()
-        loadInitialFavorites()
-        setupFavoriteButtons()
-        setupButtonClickListeners()
-
+        setupRecyclerView()
+        fetchVenuesFromFirestore()
     }
 
-    private fun loadInitialFavorites() {
-        val savedFavorites = prefs.getFavorites()
-        // Initialize all favorite states
-        listOf("kingsbury", "cinnamon", "watersEdge", "araliya").forEach { hotel ->
-            favoriteMap[hotel] = savedFavorites.contains(hotel)
-            updateHeartIcon(hotel)
-        }
-    }
+    private fun setupRecyclerView() {
+        binding.venuesRecyclerView.layoutManager = LinearLayoutManager(this)
+        binding.venuesRecyclerView.adapter = VenuesAdapter(
+            venues = venuesList,
+            onFavoriteClick = { venue ->
+                val userId = auth.currentUser?.uid
 
-    private fun updateHeartIcon(hotelKey: String) {
-        val button = when(hotelKey) {
-            "kingsbury" -> binding.kingsburyFavorite
-            "cinnamon" -> binding.cinnamonFavorite
-            "watersEdge" -> binding.watersEdgeFavorite
-            "araliya" -> binding.araliyaFavorite
-            else -> null
-        }
+                if (userId == null) {
 
-        button?.setImageResource(
-            if (favoriteMap[hotelKey] == true) R.drawable.ic_heart_filled
-            else R.drawable.ic_heart_outline
+                    Toast.makeText(this, "Please log in to favorite venues.", Toast.LENGTH_SHORT).show()
+                    return@VenuesAdapter // Exit the lambda
+                }
+
+                venue.isFavorite = !venue.isFavorite
+                if (venue.isFavorite) {
+                    prefs.addFavorite(userId, venue.id, "venue")
+                } else {
+                    prefs.removeFavorite(userId, venue.id, "venue")
+                }
+                binding.venuesRecyclerView.adapter?.notifyItemChanged(venuesList.indexOf(venue))
+            },
+            onWebsiteClick = { url ->
+                openWebsite(url)
+            }
         )
     }
 
+    private fun fetchVenuesFromFirestore() {
+        val currentUserId = auth.currentUser?.uid
 
-
-
-    private fun setupButtonClickListeners() {
-        // Kingsbury Hotel
-        binding.kingsburyButton.setOnClickListener {
-            openWebsite("https://www.thekingsburyhotel.com/weddings/wedding-packages-and-menus")
-        }
-
-        // Cinnamon Hotel
-        binding.cinnamonButton.setOnClickListener {
-            openWebsite("https://www.cinnamonhotels.com/weddings-events/weddings-by-cinnamon")
-        }
-
-        // Waters Edge
-        binding.watersEdgeButton.setOnClickListener {
-            openWebsite("https://www.watersedge.lk/my-wedding/")
-        }
-
-        // Araliya Beach Resort
-        binding.araliyaButton.setOnClickListener {
-            openWebsite("https://www.araliyaresorts.com/araliya-beach-resort/weddings/")
-        }
+        db.collection("venues")
+            .get()
+            .addOnSuccessListener { result ->
+                venuesList.clear()
+                for (document in result) {
+                    val venue = document.toObject(Venue::class.java).apply {
+                        // Check favorite status using the currentUserId
+                        isFavorite = if (currentUserId != null) {
+                            prefs.isFavorite(currentUserId, id, "venue")
+                        } else {
+                            false
+                        }
+                    }
+                    venuesList.add(venue)
+                }
+                binding.venuesRecyclerView.adapter?.notifyDataSetChanged()
+            }
+            .addOnFailureListener { exception ->
+                Toast.makeText(this, "Error loading venues: ${exception.message}", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun openWebsite(url: String) {
@@ -86,54 +99,7 @@ class VenuesActivity : AppCompatActivity() {
 
     private fun setupBackButton() {
         binding.backButton.setOnClickListener {
-            finish()  // Close current activity and return to Wishlist
+            finish()
         }
     }
-    private fun setupFavoriteButtons() {
-        // Initialize all favorite states to false
-        val hotels = listOf("kingsbury", "cinnamon", "watersEdge", "araliya")
-        hotels.forEach { hotel ->
-            favoriteMap[hotel] = false
-        }
-
-        // Set click listeners for each favorite button
-        binding.kingsburyFavorite.setOnClickListener {
-            toggleFavorite("kingsbury", binding.kingsburyFavorite)
-        }
-        binding.cinnamonFavorite.setOnClickListener {
-            toggleFavorite("cinnamon", binding.cinnamonFavorite)
-        }
-        // Set click listeners for each favorite button
-        binding.watersEdgeFavorite.setOnClickListener {
-            toggleFavorite("watersEdge", binding.watersEdgeFavorite)
-        }
-        // Set click listeners for each favorite button
-        binding.araliyaFavorite.setOnClickListener {
-            toggleFavorite("araliya", binding.araliyaFavorite)
-        }
-
-
-        // Add others similarly
-    }
-
-    private fun toggleFavorite(hotelKey: String, button: ImageButton) {
-        val isFavorite = favoriteMap[hotelKey] ?: false
-        favoriteMap[hotelKey] = !isFavorite
-        updateHeartIcon(hotelKey)
-        // Update heart icon
-        val newIcon = if (isFavorite) {
-            R.drawable.ic_heart_outline  // Empty heart
-        } else {
-            R.drawable.ic_heart_filled  // Filled heart
-        }
-        button.setImageResource(newIcon)
-
-        val favorites = favoriteMap.filter { it.value }.keys.toMutableSet()
-        prefs.saveFavorites(favorites)
-
-
-    }
-
-
-
 }

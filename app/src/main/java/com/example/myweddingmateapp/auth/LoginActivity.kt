@@ -1,80 +1,80 @@
 package com.example.myweddingmateapp
 
-
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Button
-import android.widget.TextView
-import android.widget.Toast
-import com.example.myweddingmateapp.R
-import com.example.myweddingmateapp.databinding.ActivityLoginBinding
+import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 class LoginActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityLoginBinding
+    private lateinit var auth: FirebaseAuth
+    private lateinit var firestore: FirebaseFirestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.loginButton.setOnClickListener {
-            val email = binding.emailEditText.text.toString().trim()
-            val password = binding.passwordEditText.text.toString().trim()
+        // Firebase instances
+        auth = FirebaseAuth.getInstance()
+        firestore = FirebaseFirestore.getInstance()
 
-            if (email.isEmpty()) {
-                binding.emailEditText.error = "Email required"
+        val emailEditText = findViewById<EditText>(R.id.emailEditText)
+        val passwordEditText = findViewById<EditText>(R.id.passwordEditText)
+        val loginButton = findViewById<Button>(R.id.loginButton)
+        val registerTextView = findViewById<TextView>(R.id.registerTextView)
+
+        loginButton.setOnClickListener {
+            val email = emailEditText.text.toString().trim()
+            val password = passwordEditText.text.toString().trim()
+
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Please enter both email and password", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            if (password.isEmpty()) {
-                binding.passwordEditText.error = "Password required"
-                return@setOnClickListener
-            }
+            // Firebase Auth login
+            auth.signInWithEmailAndPassword(email, password)
+                .addOnSuccessListener { authResult ->
+                    val userId = authResult.user?.uid
+                    if (userId != null) {
+                        // Fetch role from Firestore
+                        firestore.collection("users").document(userId).get()
+                            .addOnSuccessListener { document ->
+                                if (document.exists()) {
+                                    val role = document.getString("role")
 
-            loginUser(email, password)
+                                    when (role) {
+                                        "User" -> {
+                                            startActivity(Intent(this, HomeActivity::class.java))
+                                            finish()
+                                        }
+                                        "Wedding Planner" -> {
+                                            startActivity(Intent(this, PlannerDashboardActivity::class.java))
+                                            finish()
+                                        }
+                                        else -> {
+                                            Toast.makeText(this, "Unknown role", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                } else {
+                                    Toast.makeText(this, "User data not found", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                            .addOnFailureListener {
+                                Toast.makeText(this, "Failed to load user role: ${it.message}", Toast.LENGTH_LONG).show()
+                            }
+                    }
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Login failed: ${it.message}", Toast.LENGTH_LONG).show()
+                }
         }
 
-        binding.registerTextView.setOnClickListener {
+        registerTextView.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
-    }
-
-    private fun loginUser(email: String, password: String) {
-        binding.loginButton.isEnabled = false
-        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    checkUserRole()
-                } else {
-                    binding.loginButton.isEnabled = true
-                    Toast.makeText(this, "Login failed", Toast.LENGTH_SHORT).show()
-                }
-            }
-    }
-
-    private fun checkUserRole() {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        FirebaseFirestore.getInstance().collection("users").document(userId).get()
-            .addOnSuccessListener { document ->
-                when (document.getString("role")) {
-                    "Wedding Planner" -> {
-                        startActivity(Intent(this, PlannerDashboardActivity::class.java))
-                        finish()
-                    }
-                    else -> {
-                        FirebaseAuth.getInstance().signOut()
-                        Toast.makeText(this, "Wedding Planners only", Toast.LENGTH_LONG).show()
-                        binding.loginButton.isEnabled = true
-                    }
-                }
-            }
-            .addOnFailureListener {
-                FirebaseAuth.getInstance().signOut()
-                binding.loginButton.isEnabled = true
-            }
     }
 }

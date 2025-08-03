@@ -3,65 +3,120 @@ package com.example.myweddingmateapp
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.widget.ImageButton
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.myweddingmateapp.adapters.JewelleryAdapter
 import com.example.myweddingmateapp.databinding.ActivityJewelleryBinding
+import com.example.myweddingmateapp.models.Jewellery
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 class JewelleryActivity : AppCompatActivity() {
     private lateinit var binding: ActivityJewelleryBinding
     private lateinit var prefs: PrefsHelper
-    private val favoriteMap = mutableMapOf<String, Boolean>()
+    private val jewelleryList = mutableListOf<Jewellery>()
+    private lateinit var db: FirebaseFirestore
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityJewelleryBinding.inflate(layoutInflater)
         setContentView(binding.root)
         prefs = PrefsHelper.getInstance(this)
+        db = Firebase.firestore
+        auth = FirebaseAuth.getInstance()
 
         setupBackButton()
-        loadInitialFavorites()
-        setupFavoriteButtons()
-        setupButtonClickListeners()
+        setupRecyclerView()
+        fetchJewelleryFromFirestore()
     }
 
-    private fun loadInitialFavorites() {
-        val savedFavorites = prefs.getFavorites()
-        listOf("vogue", "raja", "mallika").forEach { jeweller ->
-            favoriteMap[jeweller] = savedFavorites.contains(jeweller)
-            updateHeartIcon(jeweller)
-        }
-    }
+    private fun setupRecyclerView() {
+        binding.jewelleryRecyclerView.layoutManager = LinearLayoutManager(this)
+        binding.jewelleryRecyclerView.adapter = JewelleryAdapter(
+            jewelleryList = jewelleryList,
+            onFavoriteClick = { jewellery ->
+                val userId = auth.currentUser?.uid
 
-    private fun updateHeartIcon(jewellerKey: String) {
-        val button = when(jewellerKey) {
-            "vogue" -> binding.vogueFavorite
-            "raja" -> binding.rajaFavorite
-            "mallika" -> binding.mallikaFavorite
-            else -> null
-        }
+                if (userId == null) {
+                    Toast.makeText(this, "Please log in to favorite jewellery.", Toast.LENGTH_SHORT).show()
+                    return@JewelleryAdapter // Exit the lambda early
+                }
 
-        button?.setImageResource(
-            if (favoriteMap[jewellerKey] == true) R.drawable.ic_heart_filled
-            else R.drawable.ic_heart_outline
+                jewellery.isFavorite = !jewellery.isFavorite
+                if (jewellery.isFavorite) {
+                    prefs.addFavorite(userId, jewellery.id, "jewellery")
+                } else {
+                    prefs.removeFavorite(userId, jewellery.id, "jewellery")
+                }
+                binding.jewelleryRecyclerView.adapter?.notifyItemChanged(
+                    jewelleryList.indexOf(jewellery)
+                )
+            },
+            onWebsiteClick = { url ->
+                openWebsite(url)
+            }
         )
     }
 
-    private fun setupButtonClickListeners() {
-        // Vogue Jewellers
-        binding.vogueButton.setOnClickListener {
-            openWebsite("https://www.voguejewellers.lk/")
-        }
+    private fun fetchJewelleryFromFirestore() {
+        val currentUserId = auth.currentUser?.uid
 
-        // Raja Jewellers
-        binding.rajaButton.setOnClickListener {
-            openWebsite("https://www.rajajewellers.com/")
-        }
+        db.collection("jewellery")
+            .get()
+            .addOnSuccessListener { result ->
+                jewelleryList.clear()
+                val imageMap = createImageResourceMap()
 
-        // Mallika Hemachandra Jewellers
-        binding.mallikaButton.setOnClickListener {
-            openWebsite("https://mallikahemachandra.com/")
-        }
+                for (document in result) {
+                    try {
+                        val id = document.id
+                        val name = document.getString("name") ?: ""
+                        val imageResIdName = document.getString("imageResId") ?: ""
+                        val rating = document.getDouble("rating")?.toFloat() ?: 0.0f
+                        val reviewCount = document.getLong("reviewCount")?.toInt() ?: 0
+                        val websiteUrl = document.getString("websiteUrl") ?: ""
+
+                        val imageDrawableId = imageMap[imageResIdName] ?: R.drawable.placeholder_venue
+
+                        val jewellery = Jewellery(
+                            id = id,
+                            name = name,
+                            imageResId = imageDrawableId,
+                            rating = rating,
+                            reviewCount = reviewCount,
+                            websiteUrl = websiteUrl,
+                            isFavorite = if (currentUserId != null) {
+                                prefs.isFavorite(currentUserId, id, "jewellery")
+                            } else {
+                                false
+                            }
+                        )
+                        jewelleryList.add(jewellery)
+                    } catch (e: Exception) {
+                        Log.e("JewelleryActivity", "Error parsing document ${document.id}: ${e.message}", e)
+                        Toast.makeText(this, "Error parsing data for ${document.id}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                binding.jewelleryRecyclerView.adapter?.notifyDataSetChanged()
+            }
+            .addOnFailureListener { exception ->
+                Log.w("JewelleryActivity", "Error getting jewellery documents: ", exception)
+                Toast.makeText(this, "Error loading jewellery data: ${exception.message}", Toast.LENGTH_SHORT).show()
+
+            }
+    }
+
+    private fun createImageResourceMap(): Map<String, Int> {
+        val map = mutableMapOf<String, Int>()
+        map["vogue"] = R.drawable.vogue
+        map["raja"] = R.drawable.raja
+        map["mallika"] = R.drawable.mallika
+        return map
     }
 
     private fun openWebsite(url: String) {
@@ -77,26 +132,5 @@ class JewelleryActivity : AppCompatActivity() {
         binding.backButton.setOnClickListener {
             finish()
         }
-    }
-
-    private fun setupFavoriteButtons() {
-        binding.vogueFavorite.setOnClickListener {
-            toggleFavorite("vogue", binding.vogueFavorite)
-        }
-        binding.rajaFavorite.setOnClickListener {
-            toggleFavorite("raja", binding.rajaFavorite)
-        }
-        binding.mallikaFavorite.setOnClickListener {
-            toggleFavorite("mallika", binding.mallikaFavorite)
-        }
-    }
-
-    private fun toggleFavorite(jewellerKey: String, button: ImageButton) {
-        val isFavorite = favoriteMap[jewellerKey] ?: false
-        favoriteMap[jewellerKey] = !isFavorite
-        updateHeartIcon(jewellerKey)
-
-        val favorites = favoriteMap.filter { it.value }.keys.toMutableSet()
-        prefs.saveFavorites(favorites)
     }
 }

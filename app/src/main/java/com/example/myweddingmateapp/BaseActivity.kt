@@ -36,7 +36,7 @@ abstract class BaseActivity : AppCompatActivity() {
         }
 
         navBar.findViewById<LinearLayout>(R.id.navWishlist)?.setOnClickListener {
-            navigateToActivity(WishlistActivity::class.java, R.id.navWishlist)
+            navigateToActivity(FavoritesActivity::class.java, R.id.navWishlist)
         }
     }
 

@@ -3,65 +3,135 @@ package com.example.myweddingmateapp
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.myweddingmateapp.adapters.BeauticianBrideAdapter
 import com.example.myweddingmateapp.databinding.ActivityBeauticianBrideBinding
+import com.example.myweddingmateapp.models.BeauticianBride
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 class BeauticianBrideActivity : AppCompatActivity() {
     private lateinit var binding: ActivityBeauticianBrideBinding
     private lateinit var prefs: PrefsHelper
-    private val favoriteMap = mutableMapOf<String, Boolean>()
+    private val beauticianList = mutableListOf<BeauticianBride>()
+    private lateinit var db: FirebaseFirestore
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityBeauticianBrideBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         prefs = PrefsHelper.getInstance(this)
+        db = Firebase.firestore
+        auth = FirebaseAuth.getInstance()
 
         setupBackButton()
-        loadInitialFavorites()
-        setupFavoriteButtons()
-        setupButtonClickListeners()
-    }
+        setupRecyclerView()
 
-    private fun loadInitialFavorites() {
-        val savedFavorites = prefs.getFavorites()
-        listOf("dhananjaya", "neeliya", "meylisha").forEach { beautician ->
-            favoriteMap[beautician] = savedFavorites.contains(beautician)
-            updateHeartIcon(beautician)
+
+        auth.currentUser?.uid?.let { userId ->
+            prefs.syncFavoritesFromFirestore(userId) {
+
+                fetchBeauticiansFromFirestore()
+            }
+        } ?: run {
+
+            fetchBeauticiansFromFirestore()
         }
     }
 
-    private fun updateHeartIcon(beauticianKey: String) {
-        val button = when(beauticianKey) {
-            "dhananjaya" -> binding.dhananjayaFavorite
-            "neeliya" -> binding.neeliyaFavorite
-            "meylisha" -> binding.meylishaFavorite
-            else -> null
-        }
+    override fun onStart() {
+        super.onStart()
+        auth.addAuthStateListener(authStateListener)
+    }
 
-        button?.setImageResource(
-            if (favoriteMap[beauticianKey] == true) R.drawable.ic_heart_filled
-            else R.drawable.ic_heart_outline
+    override fun onStop() {
+        super.onStop()
+        auth.removeAuthStateListener(authStateListener)
+    }
+
+    private val authStateListener = FirebaseAuth.AuthStateListener { auth ->
+
+        fetchBeauticiansFromFirestore()
+    }
+
+    private fun setupRecyclerView() {
+        binding.beauticianBrideRecyclerView.layoutManager = LinearLayoutManager(this)
+        binding.beauticianBrideRecyclerView.adapter = BeauticianBrideAdapter(
+            beauticians = beauticianList,
+            onFavoriteClick = { beautician ->
+                val userId = auth.currentUser?.uid
+
+                if (userId == null) {
+                    Toast.makeText(this, "Please log in to favorite beauticians.", Toast.LENGTH_SHORT).show()
+                    return@BeauticianBrideAdapter
+                }
+
+                beautician.isFavorite = !beautician.isFavorite
+                if (beautician.isFavorite) {
+
+                    prefs.addFavorite(userId, beautician.id, "beauticianBride") { success ->
+                        if (!success) {
+                            // Revert UI if Firestore operation failed
+                            beautician.isFavorite = !beautician.isFavorite
+                            binding.beauticianBrideRecyclerView.adapter?.notifyItemChanged(
+                                beauticianList.indexOf(beautician)
+                            )
+                            Toast.makeText(this, "Failed to save favorite", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } else {
+
+                    prefs.removeFavorite(userId, beautician.id, "beauticianBride") { success ->
+                        if (!success) {
+
+                            beautician.isFavorite = !beautician.isFavorite
+                            binding.beauticianBrideRecyclerView.adapter?.notifyItemChanged(
+                                beauticianList.indexOf(beautician)
+                            )
+                            Toast.makeText(this, "Failed to remove favorite", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+                binding.beauticianBrideRecyclerView.adapter?.notifyItemChanged(
+                    beauticianList.indexOf(beautician)
+                )
+            },
+            onWebsiteClick = { url ->
+                url?.let { openWebsite(it) } ?: run {
+                    Toast.makeText(this, "No website available", Toast.LENGTH_SHORT).show()
+                }
+            }
         )
     }
 
-    private fun setupButtonClickListeners() {
-        // Dhananjaya Bandara
-        binding.dhananjayaButton.setOnClickListener {
-            openWebsite("https://dhananjayabandara.lk/")
-        }
+    private fun fetchBeauticiansFromFirestore() {
+        val currentUserId = auth.currentUser?.uid
 
-        // Neeliya Mendis Salon
-        binding.neeliyaButton.setOnClickListener {
-            openWebsite("https://neeliyamendissalons.com/")
-        }
+        db.collection("beautician-bride")
+            .get()
+            .addOnSuccessListener { result ->
+                beauticianList.clear()
+                for (document in result) {
+                    val beautician = document.toObject(BeauticianBride::class.java).apply {
+                        id = document.id
 
-        // A.Meylisha
-        binding.meylishaButton.setOnClickListener {
-            openWebsite("https://www.instagram.com/makeupobsessedbymeylisha/")
-        }
+                        isFavorite = currentUserId?.let { userId ->
+                            prefs.isFavorite(userId, id, "beauticianBride")
+                        } ?: false
+                    }
+                    beauticianList.add(beautician)
+                }
+                binding.beauticianBrideRecyclerView.adapter?.notifyDataSetChanged()
+            }
+            .addOnFailureListener { exception ->
+                Toast.makeText(this, "Error loading beauticians: ${exception.message}", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun openWebsite(url: String) {
@@ -77,26 +147,5 @@ class BeauticianBrideActivity : AppCompatActivity() {
         binding.backButton.setOnClickListener {
             finish()
         }
-    }
-
-    private fun setupFavoriteButtons() {
-        binding.dhananjayaFavorite.setOnClickListener {
-            toggleFavorite("dhananjaya", binding.dhananjayaFavorite)
-        }
-        binding.neeliyaFavorite.setOnClickListener {
-            toggleFavorite("neeliya", binding.neeliyaFavorite)
-        }
-        binding.meylishaFavorite.setOnClickListener {
-            toggleFavorite("meylisha", binding.meylishaFavorite)
-        }
-    }
-
-    private fun toggleFavorite(beauticianKey: String, button: ImageButton) {
-        val isFavorite = favoriteMap[beauticianKey] ?: false
-        favoriteMap[beauticianKey] = !isFavorite
-        updateHeartIcon(beauticianKey)
-
-        val favorites = favoriteMap.filter { it.value }.keys.toMutableSet()
-        prefs.saveFavorites(favorites)
     }
 }
