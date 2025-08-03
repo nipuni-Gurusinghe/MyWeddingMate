@@ -58,5 +58,19 @@
     <string name="upcoming_reminders">⏰ Upcoming Reminders</string>
     <string name="my_wedding_checklists">📝 My Wedding Checklists</string>
     <string name="LKR">LKR</string>
+    <string name="profile_image">Profile Image</string>
+    <string name="arrow_icon">Navigate to wishlist</string>
+    <string name="client_image">Client profile picture</string>
+    <string name="favorites_title">My Favorites</string>
+    <string name="no_favorites_found">No favorites yet</string>
+    <string name="add_favorites_prompt">Add items to see them here</string>
+    <string name="swipe_to_refresh">Pull to refresh</string>
+    <string name="loading_favorites">Loading favorites…</string>
+
+
+    <string name="category_jewelry">Jewelry</string>
+    <string name="category_venue">Venue</string>
+    <string name="category_catering">Catering</string>
+    <string name="category_other">Other</string>
 </resources>
 

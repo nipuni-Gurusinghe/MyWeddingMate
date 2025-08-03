@@ -112,7 +112,7 @@
             android:src="@drawable/ic_emoji"
             app:tint="@color/primary_brown"/>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
+        <ImageButton
             android:id="@+id/btnSend"
             android:layout_width="48dp"
             android:layout_height="48dp"

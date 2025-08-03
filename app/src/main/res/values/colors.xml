@@ -102,6 +102,9 @@
     <!-- Define rating color (e.g., gold/yellow) -->
     <color name="rating_color">#FFFFD700</color>
     <color name="gray_dark">#808080</color> <!-- Gold -->
-
+    <color name="text_hint">#61000000</color>
+    <color name="divider">#1F000000</color>
+    <color name="red">#FF0000</color>
+    <color name="colorAccent">#6200EE</color>
 </resources>
 

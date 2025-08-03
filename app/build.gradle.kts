@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.firebase.storage)
     implementation(libs.glide)
     implementation(libs.gson)
+    implementation(libs.androidx.navigation.fragment.ktx)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

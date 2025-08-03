@@ -7,36 +7,56 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myweddingmateapp.R
 import com.example.myweddingmateapp.models.ChatMessage
+import java.text.SimpleDateFormat
+import java.util.*
 
 class PlannerChatAdapter(private val messages: List<ChatMessage>) :
-    RecyclerView.Adapter<PlannerChatAdapter.ChatViewHolder>() {
+    RecyclerView.Adapter<PlannerChatAdapter.MessageViewHolder>() {
+
+    companion object {
+        private const val VIEW_TYPE_RECEIVED = 0
+        private const val VIEW_TYPE_SENT = 1
+        private val timeFormat = SimpleDateFormat("h:mm a", Locale.getDefault())
+    }
 
     override fun getItemViewType(position: Int): Int {
-        return if (messages[position].isReceived) 0 else 1
+        return if (messages[position].isReceived) VIEW_TYPE_RECEIVED else VIEW_TYPE_SENT
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChatViewHolder {
-        val layout = if (viewType == 0) R.layout.item_message_received
-        else R.layout.item_message_sent
-        val view = LayoutInflater.from(parent.context).inflate(layout, parent, false)
-        return ChatViewHolder(view)
-    }
-
-    inner class ChatViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val textSender: TextView? = itemView.findViewById(R.id.textSender)
-        private val textMessage: TextView = itemView.findViewById(R.id.textMessage)
-        private val textTime: TextView = itemView.findViewById(R.id.textTime)
-
-        fun bind(message: ChatMessage) {
-            textSender?.text = message.senderName
-            textMessage.text = message.message
-            textTime.text = message.displayTime
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder {
+        val layoutRes = when (viewType) {
+            VIEW_TYPE_RECEIVED -> R.layout.item_message_received
+            else -> R.layout.item_message_sent
         }
+        val view = LayoutInflater.from(parent.context).inflate(layoutRes, parent, false)
+        return MessageViewHolder(view, viewType)
     }
 
-    override fun onBindViewHolder(holder: ChatViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
         holder.bind(messages[position])
     }
 
     override fun getItemCount(): Int = messages.size
+
+    inner class MessageViewHolder(itemView: View, viewType: Int) : RecyclerView.ViewHolder(itemView) {
+        private val senderName: TextView?
+        private val messageText: TextView
+        private val messageTime: TextView
+
+        init {
+            messageText = itemView.findViewById(R.id.textMessage)
+            messageTime = itemView.findViewById(R.id.textTime)
+            senderName = if (viewType == VIEW_TYPE_RECEIVED) {
+                itemView.findViewById(R.id.textSender)
+            } else {
+                null
+            }
+        }
+
+        fun bind(message: ChatMessage) {
+            senderName?.text = message.senderName
+            messageText.text = message.message
+            messageTime.text = timeFormat.format(Date(message.timestamp))
+        }
+    }
 }
