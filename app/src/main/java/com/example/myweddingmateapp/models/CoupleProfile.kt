@@ -7,6 +7,7 @@ data class CoupleProfile(
     val email: String,
     val phone: String,
     val address: String,
+    val weddingDate: String,
     val profilePhotoPath: String,
     val createdAt: Long,
     val updatedAt: Long
