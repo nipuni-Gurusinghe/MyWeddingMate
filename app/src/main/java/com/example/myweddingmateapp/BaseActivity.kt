@@ -27,8 +27,8 @@ abstract class BaseActivity : AppCompatActivity() {
             navigateToActivity(HomeActivity::class.java, R.id.navHome)
         }
 
-        navBar.findViewById<LinearLayout>(R.id.navTodo)?.setOnClickListener {
-            navigateToActivity(TodoActivity::class.java, R.id.navTodo)
+        navBar.findViewById<LinearLayout>(R.id.navChat)?.setOnClickListener {
+            navigateToActivity(ChatWithPlannerActivity::class.java, R.id.navChat)
         }
 
         navBar.findViewById<LinearLayout>(R.id.navProfile)?.setOnClickListener {
@@ -55,7 +55,7 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     private fun resetNavigationItems() {
-        listOf(R.id.navHome, R.id.navTodo, R.id.navProfile, R.id.navWishlist).forEach { itemId ->
+        listOf(R.id.navHome, R.id.navChat, R.id.navProfile, R.id.navWishlist).forEach { itemId ->
             navBar.findViewById<LinearLayout>(itemId)?.let { setNavigationItemUnselected(it) }
         }
     }
@@ -65,9 +65,9 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     private fun setNavigationItemSelected(layout: LinearLayout) {
-        (layout.getChildAt(0) as? ImageView)?.setColorFilter(getColor(R.color.white))
+        (layout.getChildAt(0) as? ImageView)?.setColorFilter(getColor(R.color.black))
         (layout.getChildAt(1) as? TextView)?.apply {
-            setTextColor(getColor(R.color.white))
+            setTextColor(getColor(R.color.black))
             setTypeface(null, Typeface.BOLD)
         }
     }

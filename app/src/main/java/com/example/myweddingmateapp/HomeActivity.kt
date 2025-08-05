@@ -1,7 +1,6 @@
 package com.example.myweddingmateapp
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -11,7 +10,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.example.myweddingmateapp.models.WeddingPlanner
+
 
 class HomeActivity : BaseActivity() {
 
@@ -20,12 +22,16 @@ class HomeActivity : BaseActivity() {
     private lateinit var btnVendors: Button
     private lateinit var btnBudget: Button
 
-    // Activity Result Launchers
+
+    private lateinit var firestore: FirebaseFirestore
+    private lateinit var auth: FirebaseAuth
+    private val COLLECTION_COUPLE_PROFILES = "couple_profiles"
+
+
     private val profileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
             showToast("Profile updated successfully!")
             Log.d(TAG, "Profile activity completed successfully")
-            refreshButtonStates()
         }
     }
 
@@ -61,7 +67,6 @@ class HomeActivity : BaseActivity() {
         private const val TAG = "HomeActivity"
     }
 
-    // BaseActivity abstract method implementations
     override fun getCurrentNavId(): Int = R.id.navHome
 
     override fun getLayoutResourceId(): Int = R.layout.activity_home
@@ -70,6 +75,7 @@ class HomeActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
 
         initializeViews()
+        initializeFirebase()
         setupClickListeners()
         setupButtonAnimations()
         showWelcomeMessage()
@@ -85,6 +91,11 @@ class HomeActivity : BaseActivity() {
             Log.e(TAG, "Error initializing views", e)
             showToast("Error loading interface")
         }
+    }
+
+    private fun initializeFirebase() {
+        firestore = FirebaseFirestore.getInstance()
+        auth = FirebaseAuth.getInstance()
     }
 
     private fun setupClickListeners() {
@@ -181,31 +192,9 @@ class HomeActivity : BaseActivity() {
         }
     }
 
-    //planner functions
     private fun onWeddingPlannerSelected(planner: WeddingPlanner) {
         Log.d(TAG, "Wedding planner selected: ${planner.name}")
-        saveSelectedPlanner(planner)
         showToast("${planner.name} selected as your wedding planner!")
-        updateUIForSelectedPlanner(planner)
-    }
-
-    private fun saveSelectedPlanner(planner: WeddingPlanner) {
-        val sharedPref = getSharedPreferences("wedding_preferences", Context.MODE_PRIVATE)
-        with(sharedPref.edit()) {
-            putString("selected_planner_id", planner.id)
-            putString("selected_planner_name", planner.name)
-            putString("selected_planner_email", planner.email)
-            putString("selected_planner_phone", planner.phone)
-            putString("selected_planner_bio", planner.bio)
-            putFloat("selected_planner_rating", planner.rating)
-            putString("selected_planner_location", planner.location)
-            putBoolean("has_selected_planner", true)
-            apply()
-        }
-    }
-
-    private fun updateUIForSelectedPlanner(planner: WeddingPlanner) {
-
     }
 
     private fun showWelcomeMessage() {
@@ -233,46 +222,5 @@ class HomeActivity : BaseActivity() {
             }
             .setNegativeButton("Cancel", null)
             .show()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        Log.d(TAG, "Home activity resumed")
-    //    refreshButtonStates()
-    }
-
-    private fun refreshButtonStates() {
-        val hasProfile = checkIfProfileExists()
-
-        System.out.println("hasProfile" + hasProfile)
-        btnPlanners.isEnabled = hasProfile
-        btnVendors.isEnabled = hasProfile
-        btnBudget.isEnabled = hasProfile
-
-        if (!hasProfile) {
-            btnPlanners.alpha = 0.6f
-            btnVendors.alpha = 0.6f
-            btnBudget.alpha = 0.6f
-
-            btnPlanners.setOnClickListener {
-                showToast("Please complete your couple profile first!")
-            }
-            btnVendors.setOnClickListener {
-                showToast("Please complete your couple profile first!")
-            }
-            btnBudget.setOnClickListener {
-                showToast("Please complete your couple profile first!")
-            }
-        } else {
-            btnPlanners.alpha = 1.0f
-            btnVendors.alpha = 1.0f
-            btnBudget.alpha = 1.0f
-            setupClickListeners()
-        }
-    }
-
-    private fun checkIfProfileExists(): Boolean {
-        val sharedPreferences = getSharedPreferences("couple_profile_prefs", MODE_PRIVATE)
-        return !sharedPreferences.getString("profile_data", null).isNullOrEmpty()
     }
 }

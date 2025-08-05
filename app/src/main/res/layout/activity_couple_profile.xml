@@ -28,6 +28,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="16dp"
+        android:paddingBottom="80dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
@@ -35,7 +36,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Profile Photo -->
+            <!-- Photo -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -83,7 +84,7 @@
 
             </androidx.cardview.widget.CardView>
 
-
+            <!-- Partner Information Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -161,7 +162,7 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-
+            <!-- Contact Information Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -233,6 +234,33 @@
                             android:textColorHint="@color/hint_text_color" />
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <!-- NEW: Wedding Date Field -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/til_wedding_date"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:hint="Wedding Date*"
+                        app:boxStrokeColor="@color/primary_brown"
+                        app:boxStrokeWidth="2dp"
+                        app:errorEnabled="true"
+                        app:hintTextColor="@color/hint_text_color"
+                        app:endIconDrawable="@drawable/ic_calender"
+                        app:endIconTint="@color/primary_brown"
+                        app:endIconMode="custom">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_wedding_date"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:focusable="false"
+                            android:clickable="true"
+                            android:inputType="none"
+                            android:textColor="@color/text_primary"
+                            android:textColorHint="@color/hint_text_color" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/til_address"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -262,7 +290,7 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Btns -->
+            <!-- Buttons -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -295,7 +323,7 @@
                     android:layout_marginStart="8dp"
                     android:layout_weight="1"
                     android:backgroundTint="@color/primary_brown"
-                    android:text="SAVE PROFILE"
+                    android:text="UPDATE PROFILE"
                     android:textColor="@color/white"
                     android:textSize="16sp"
                     android:textStyle="bold"
@@ -304,7 +332,6 @@
 
             </LinearLayout>
 
-            <!--  Note -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -314,28 +341,16 @@
                 android:textColor="@color/hint_text_color"
                 android:textSize="19sp" />
 
-<!--            <?xml version="1.0" encoding="utf-8"?>-->
-<!--            <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="match_parent">-->
-
-<!--                <FrameLayout-->
-<!--                    android:id="@+id/container"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="match_parent"-->
-<!--                    android:layout_above="@+id/navBar" />-->
-
-                <!--  NavBar calling -->
-                <include
-                    android:id="@+id/navBar"
-                    layout="@layout/nav_bar"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true" />
-<!--            </RelativeLayout>-->
-
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
+
+    <!-- Navigation Bar - Fixed at bottom -->
+    <include
+        android:id="@+id/navBar"
+        layout="@layout/nav_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -1,21 +1,21 @@
 package com.example.myweddingmateapp
 
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 
-class VendorSelectionActivity : BaseActivity() {
+class VendorSelectionActivity : AppCompatActivity() {
 
-    override fun getCurrentNavId(): Int = R.id.navWishlist
 
-    override fun getLayoutResourceId(): Int = R.layout.activity_vendor_selection
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_vendor_selection)
 
-        // Initialize your vendor selection-specific UI components here
+
         initializeVendorComponents()
     }
 
     private fun initializeVendorComponents() {
-        // vendor selection activity initialization
+
     }
 }

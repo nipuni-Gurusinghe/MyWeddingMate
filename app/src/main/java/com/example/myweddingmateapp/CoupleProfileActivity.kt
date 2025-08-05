@@ -2,38 +2,37 @@ package com.example.myweddingmateapp
 
 import android.Manifest
 import android.app.Activity
-import android.content.Context
+import android.app.DatePickerDialog
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.util.Patterns
+import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.myweddingmateapp.models.CoupleProfile
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -52,34 +51,37 @@ class CoupleProfileActivity : BaseActivity() {
     private lateinit var etEmail: TextInputEditText
     private lateinit var tilPhone: TextInputLayout
     private lateinit var etPhone: TextInputEditText
+    private lateinit var tilWeddingDate: TextInputLayout
+    private lateinit var etWeddingDate: TextInputEditText
     private lateinit var tilAddress: TextInputLayout
     private lateinit var etAddress: TextInputEditText
     private lateinit var btnCancel: MaterialButton
     private lateinit var btnSaveProfile: MaterialButton
 
+    private lateinit var firestore: FirebaseFirestore
+    private lateinit var auth: FirebaseAuth
 
-    private lateinit var sharedPreferences: SharedPreferences
-    private var currentPhotoPath: String = ""
+    private var profilePhotoBitmap: Bitmap? = null
     private var isEditMode: Boolean = false
     private var coupleProfileData: CoupleProfile? = null
+    private var selectedWeddingDate: Calendar = Calendar.getInstance()
 
-    // Activity Result Launchers
-    private lateinit var cameraLauncher: ActivityResultLauncher<Intent>
+
+    private val displayDateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+    private val storeDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
+
+    private lateinit var takePictureLauncher: ActivityResultLauncher<Intent>
     private lateinit var galleryLauncher: ActivityResultLauncher<Intent>
-    private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
 
-    // Constants
+
     companion object {
         private const val TAG = "CoupleProfileActivity"
-        private const val PREFS_NAME = "couple_profile_prefs"
-        private const val KEY_PROFILE_DATA = "profile_data"
-        private const val REQUEST_IMAGE_CAPTURE = 1
-        private const val REQUEST_IMAGE_GALLERY = 2
+        private const val COLLECTION_COUPLE_PROFILES = "couple_profiles"
         private const val CAMERA_PERMISSION_REQUEST_CODE = 100
         private const val STORAGE_PERMISSION_REQUEST_CODE = 101
     }
 
-    // BaseActivity abstract methods
     override fun getCurrentNavId(): Int = R.id.navProfile
 
     override fun getLayoutResourceId(): Int = R.layout.activity_couple_profile
@@ -88,12 +90,16 @@ class CoupleProfileActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
 
         initializeViews()
-        initializePreferences()
+        initializeFirestore()
         initializeActivityLaunchers()
         setupToolbar()
         setupTextWatchers()
         setupClickListeners()
-        loadSavedData()
+
+
+        if (auth.currentUser != null) {
+            loadSavedData()
+        }
     }
 
     private fun initializeViews() {
@@ -108,27 +114,70 @@ class CoupleProfileActivity : BaseActivity() {
         etEmail = findViewById(R.id.et_email)
         tilPhone = findViewById(R.id.til_phone)
         etPhone = findViewById(R.id.et_phone)
+        tilWeddingDate = findViewById(R.id.til_wedding_date)
+        etWeddingDate = findViewById(R.id.et_wedding_date)
         tilAddress = findViewById(R.id.til_address)
         etAddress = findViewById(R.id.et_address)
         btnCancel = findViewById(R.id.btn_cancel)
         btnSaveProfile = findViewById(R.id.btn_save_profile)
     }
 
-    private fun initializePreferences() {
-        sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private fun initializeFirestore() {
+        firestore = FirebaseFirestore.getInstance()
+        auth = FirebaseAuth.getInstance()
+
+        if (auth.currentUser == null) {
+            // Sign in anonymously if no user is authenticated
+            auth.signInAnonymously()
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Log.d(TAG, "authentication successful")
+                        loadSavedData()
+                    } else {
+                        Log.e(TAG, "authentication failed", task.exception)
+                        showToast("Authentication failed. Please try again.")
+                    }
+                }
+        }
     }
 
     private fun initializeActivityLaunchers() {
-        cameraLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            handleCameraResult(result)
+        // Camera
+        takePictureLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val extras = result.data?.extras
+                val imageBitmap = extras?.get("data") as? Bitmap
+                if (imageBitmap != null) {
+                    ivProfilePhoto.setImageBitmap(imageBitmap)
+                    ivProfilePhoto.visibility = View.VISIBLE
+                    profilePhotoBitmap = imageBitmap
+                    showToast("Photo captured successfully")
+                } else {
+                    showToast("Failed to capture photo")
+                }
+            }
         }
 
-        galleryLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            handleGalleryResult(result)
-        }
-
-        permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-            handlePermissionResult(permissions)
+        // gallery
+        galleryLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                result.data?.data?.let { uri ->
+                    try {
+                        val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
+                        ivProfilePhoto.setImageBitmap(bitmap)
+                        ivProfilePhoto.visibility = View.VISIBLE
+                        profilePhotoBitmap = bitmap
+                        showToast("Photo selected successfully")
+                    } catch (e: IOException) {
+                        Log.e(TAG, "Error loading image from gallery", e)
+                        showToast("Error loading image")
+                    }
+                }
+            }
         }
     }
 
@@ -153,6 +202,7 @@ class CoupleProfileActivity : BaseActivity() {
         etPartner2Name.addTextChangedListener(textWatcher)
         etEmail.addTextChangedListener(textWatcher)
         etPhone.addTextChangedListener(textWatcher)
+        etWeddingDate.addTextChangedListener(textWatcher)
         etAddress.addTextChangedListener(textWatcher)
     }
 
@@ -168,162 +218,195 @@ class CoupleProfileActivity : BaseActivity() {
         btnSaveProfile.setOnClickListener {
             saveProfile()
         }
+
+
+        etWeddingDate.setOnClickListener {
+            showDatePicker()
+        }
+    }
+
+    private fun showDatePicker() {
+        val currentDate = Calendar.getInstance()
+
+        // Set date to today
+        val datePickerDialog = DatePickerDialog(
+            this,
+            { _, year, month, dayOfMonth ->
+                selectedWeddingDate.set(Calendar.YEAR, year)
+                selectedWeddingDate.set(Calendar.MONTH, month)
+                selectedWeddingDate.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+
+                // Display formatted date
+                val displayDate = displayDateFormat.format(selectedWeddingDate.time)
+                etWeddingDate.setText(displayDate)
+
+                // Clear any previous error
+                tilWeddingDate.error = null
+            },
+            selectedWeddingDate.get(Calendar.YEAR),
+            selectedWeddingDate.get(Calendar.MONTH),
+            selectedWeddingDate.get(Calendar.DAY_OF_MONTH)
+        )
+
+        // Set  date to today
+        datePickerDialog.datePicker.minDate = currentDate.timeInMillis
+        datePickerDialog.show()
     }
 
     private fun showPhotoSelectionDialog() {
-        val options = arrayOf("Take Photo", "Choose from Gallery", "Remove Photo")
+        val options = arrayOf("Take Photo", "Choose from Gallery")
 
         AlertDialog.Builder(this)
             .setTitle("Select Photo")
             .setItems(options) { _, which ->
                 when (which) {
-                    0 -> checkCameraPermissionAndTakePhoto()
+                    0 -> checkCameraPermission()
                     1 -> checkStoragePermissionAndOpenGallery()
-                    2 -> removePhoto()
                 }
             }
             .show()
     }
 
-    private fun checkCameraPermissionAndTakePhoto() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            takePhoto()
+    private fun checkCameraPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+            == PackageManager.PERMISSION_GRANTED) {
+            // Permission start camera intent
+            dispatchTakePictureIntent()
         } else {
-            permissionLauncher.launch(arrayOf(Manifest.permission.CAMERA))
+            // Request the camera permission
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.CAMERA),
+                CAMERA_PERMISSION_REQUEST_CODE
+            )
         }
     }
 
     private fun checkStoragePermissionAndOpenGallery() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+            == PackageManager.PERMISSION_GRANTED) {
             openGallery()
         } else {
-            permissionLauncher.launch(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                STORAGE_PERMISSION_REQUEST_CODE
+            )
         }
     }
 
-    private fun takePhoto() {
-        try {
-            val photoFile = createImageFile()
-            val photoURI = FileProvider.getUriForFile(
-                this,
-                "${packageName}.fileprovider",
-                photoFile
-            )
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-            val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-            cameraLauncher.launch(takePictureIntent)
-        } catch (ex: IOException) {
-            Log.e(TAG, "Error creating image file", ex)
-            showToast("Error creating image file")
+        when (requestCode) {
+            CAMERA_PERMISSION_REQUEST_CODE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    dispatchTakePictureIntent()
+                } else {
+
+                    Toast.makeText(this, "Camera permission is required to take photos", Toast.LENGTH_SHORT).show()
+                }
+            }
+            STORAGE_PERMISSION_REQUEST_CODE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    openGallery()
+                } else {
+                    showToast("Storage permission is required to access photos")
+                }
+            }
+        }
+    }
+
+    private fun dispatchTakePictureIntent() {
+        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        if (takePictureIntent.resolveActivity(packageManager) != null) {
+
+            takePictureLauncher.launch(takePictureIntent)
+        } else {
+            showToast("No camera app available")
         }
     }
 
     private fun openGallery() {
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        intent.type = "image/*"
         galleryLauncher.launch(intent)
-    }
-
-    private fun removePhoto() {
-        ivProfilePhoto.setImageResource(R.drawable.ic_couple_profile)
-        currentPhotoPath = ""
-        showToast("Photo removed")
-    }
-
-    private fun createImageFile(): File {
-        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-        val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        val imageFile = File.createTempFile("COUPLE_${timeStamp}_", ".jpg", storageDir)
-        currentPhotoPath = imageFile.absolutePath
-        return imageFile
-    }
-
-    private fun handleCameraResult(result: ActivityResult) {
-        if (result.resultCode == Activity.RESULT_OK) {
-            if (currentPhotoPath.isNotEmpty()) {
-                val bitmap = BitmapFactory.decodeFile(currentPhotoPath)
-                ivProfilePhoto.setImageBitmap(bitmap)
-                showToast("Photo captured successfully")
-            }
-        }
-    }
-
-    private fun handleGalleryResult(result: ActivityResult) {
-        if (result.resultCode == Activity.RESULT_OK) {
-            result.data?.data?.let { uri ->
-                try {
-                    val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
-                    ivProfilePhoto.setImageBitmap(bitmap)
-                    saveImageToInternalStorage(bitmap)
-                    showToast("Photo selected successfully")
-                } catch (e: IOException) {
-                    Log.e(TAG, "Error loading image from gallery", e)
-                    showToast("Error loading image")
-                }
-            }
-        }
-    }
-
-    private fun saveImageToInternalStorage(bitmap: Bitmap) {
-        try {
-            val filename = "couple_profile_${System.currentTimeMillis()}.jpg"
-            val file = File(filesDir, filename)
-            val fos = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fos)
-            fos.close()
-            currentPhotoPath = file.absolutePath
-        } catch (e: IOException) {
-            Log.e(TAG, "Error saving image to internal storage", e)
-        }
-    }
-
-    private fun handlePermissionResult(permissions: Map<String, Boolean>) {
-        permissions.forEach { (permission, granted) ->
-            when (permission) {
-                Manifest.permission.CAMERA -> {
-                    if (granted) {
-                        takePhoto()
-                    } else {
-                        showToast("Camera permission is required to take photos")
-                    }
-                }
-                Manifest.permission.READ_EXTERNAL_STORAGE -> {
-                    if (granted) {
-                        openGallery()
-                    } else {
-                        showToast("Storage permission is required to access photos")
-                    }
-                }
-            }
-        }
     }
 
     private fun saveProfile() {
         if (validateInputs()) {
-            lifecycleScope.launch {
-                try {
-                    val profile = createCoupleProfile()
-                    saveProfileData(profile)
-                    withContext(Dispatchers.Main) {
-                        showToast("Profile saved successfully!")
-                        setResult(Activity.RESULT_OK)
-                        finish()
+            if (auth.currentUser == null) {
+                showToast("Authenticating...")
+                auth.signInAnonymously()
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            performSave()
+                        } else {
+                            showToast("Authentication failed. Please try again.")
+                            Log.e(TAG, "Authentication failed", task.exception)
+                        }
                     }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error saving profile", e)
-                    withContext(Dispatchers.Main) {
-                        showToast("Error saving profile. Please try again.")
-                    }
+            } else {
+                performSave()
+            }
+        }
+    }
+
+    private fun performSave() {
+        lifecycleScope.launch {
+            try {
+                showToast("Saving profile...")
+                val profile = createCoupleProfile()
+                saveProfileToFirestore(profile)
+                withContext(Dispatchers.Main) {
+                    showToast("Profile saved successfully!")
+                    setResult(Activity.RESULT_OK)
+                    finish()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error saving profile", e)
+                withContext(Dispatchers.Main) {
+                    showToast("Error saving profile. Please check your internet connection and try again.")
                 }
             }
         }
+    }
+
+    private suspend fun saveProfileToFirestore(profile: CoupleProfile) {
+        val currentUser = auth.currentUser
+        if (currentUser == null) {
+            throw Exception("User not authenticated")
+        }
+
+        val profileData = hashMapOf(
+            "id" to profile.id,
+            "partner1Name" to profile.partner1Name,
+            "partner2Name" to profile.partner2Name,
+            "email" to profile.email,
+            "phone" to profile.phone,
+            "address" to profile.address,
+            "weddingDate" to profile.weddingDate,
+            "createdAt" to profile.createdAt,
+            "updatedAt" to profile.updatedAt,
+            "userId" to currentUser.uid,
+            "hasProfilePhoto" to (profilePhotoBitmap != null)
+        )
+
+        firestore.collection(COLLECTION_COUPLE_PROFILES)
+            .document(currentUser.uid)
+            .set(profileData, SetOptions.merge())
+            .await()
     }
 
     private fun validateInputs(): Boolean {
         clearErrorMessages()
         var isValid = true
 
-        // Validate Partner 1 Name
         if (etPartner1Name.text.toString().trim().isEmpty()) {
             tilPartner1Name.error = "Partner 1 name is required"
             isValid = false
@@ -332,7 +415,6 @@ class CoupleProfileActivity : BaseActivity() {
             isValid = false
         }
 
-        // Validate Partner 2 Name
         if (etPartner2Name.text.toString().trim().isEmpty()) {
             tilPartner2Name.error = "Partner 2 name is required"
             isValid = false
@@ -341,7 +423,6 @@ class CoupleProfileActivity : BaseActivity() {
             isValid = false
         }
 
-        // Validate Email
         val email = etEmail.text.toString().trim()
         if (email.isEmpty()) {
             tilEmail.error = "Email address is required"
@@ -351,7 +432,6 @@ class CoupleProfileActivity : BaseActivity() {
             isValid = false
         }
 
-        // Validate Phone
         val phone = etPhone.text.toString().trim()
         if (phone.isEmpty()) {
             tilPhone.error = "Phone number is required"
@@ -359,6 +439,24 @@ class CoupleProfileActivity : BaseActivity() {
         } else if (!isValidPhoneNumber(phone)) {
             tilPhone.error = "Please enter a valid phone number"
             isValid = false
+        }
+
+
+        if (etWeddingDate.text.toString().trim().isEmpty()) {
+            tilWeddingDate.error = "Wedding date is required"
+            isValid = false
+        } else {
+            // check  selected date
+            val currentDate = Calendar.getInstance()
+            currentDate.set(Calendar.HOUR_OF_DAY, 0)
+            currentDate.set(Calendar.MINUTE, 0)
+            currentDate.set(Calendar.SECOND, 0)
+            currentDate.set(Calendar.MILLISECOND, 0)
+
+            if (selectedWeddingDate.before(currentDate)) {
+                tilWeddingDate.error = "Wedding date cannot be in the past"
+                isValid = false
+            }
         }
 
         return isValid
@@ -374,10 +472,14 @@ class CoupleProfileActivity : BaseActivity() {
         tilPartner2Name.error = null
         tilEmail.error = null
         tilPhone.error = null
+        tilWeddingDate.error = null
         tilAddress.error = null
     }
 
     private fun createCoupleProfile(): CoupleProfile {
+        // storage format (y-m-d)
+        val weddingDateString = storeDateFormat.format(selectedWeddingDate.time)
+
         return CoupleProfile(
             id = coupleProfileData?.id ?: UUID.randomUUID().toString(),
             partner1Name = etPartner1Name.text.toString().trim(),
@@ -385,76 +487,71 @@ class CoupleProfileActivity : BaseActivity() {
             email = etEmail.text.toString().trim(),
             phone = etPhone.text.toString().trim(),
             address = etAddress.text.toString().trim(),
-            profilePhotoPath = currentPhotoPath,
+            weddingDate = weddingDateString,
+            profilePhotoPath = "", // No longer using file paths
             createdAt = coupleProfileData?.createdAt ?: System.currentTimeMillis(),
             updatedAt = System.currentTimeMillis()
         )
     }
 
-    private fun saveProfileData(profile: CoupleProfile) {
-
-        val profileJson = """
-            {
-                "id": "${profile.id}",
-                "partner1Name": "${profile.partner1Name}",
-                "partner2Name": "${profile.partner2Name}",
-                "email": "${profile.email}",
-                "phone": "${profile.phone}",
-                "address": "${profile.address.replace("\"", "\\\"")}",
-                "profilePhotoPath": "${profile.profilePhotoPath}",
-                "createdAt": ${profile.createdAt},
-                "updatedAt": ${profile.updatedAt}
-            }
-        """.trimIndent()
-
-        sharedPreferences.edit()
-            .putString(KEY_PROFILE_DATA, profileJson)
-            .apply()
-    }
-
     private fun loadSavedData() {
-        val profileJson = sharedPreferences.getString(KEY_PROFILE_DATA, null)
-        if (profileJson != null) {
+        lifecycleScope.launch {
             try {
-
-                coupleProfileData = parseProfileFromJson(profileJson)
-                populateFields()
-                isEditMode = true
+                showToast("Loading profile...")
+                val profile = loadProfileFromFirestore()
+                withContext(Dispatchers.Main) {
+                    if (profile != null) {
+                        coupleProfileData = profile
+                        populateFields()
+                        isEditMode = true
+                        showToast("Profile loaded successfully")
+                    } else {
+                        showToast("No saved profile found")
+                    }
+                }
             } catch (e: Exception) {
-                Log.e(TAG, "Error loading saved data", e)
+                Log.e(TAG, "Error loading profile", e)
+                withContext(Dispatchers.Main) {
+                    showToast("Error loading profile. Please check your internet connection.")
+                }
             }
         }
     }
 
-    private fun parseProfileFromJson(json: String): CoupleProfile {
-        val id = extractJsonValue(json, "id")
-        val partner1Name = extractJsonValue(json, "partner1Name")
-        val partner2Name = extractJsonValue(json, "partner2Name")
-        val email = extractJsonValue(json, "email")
-        val phone = extractJsonValue(json, "phone")
-        val address = extractJsonValue(json, "address")
-        val profilePhotoPath = extractJsonValue(json, "profilePhotoPath")
-        val createdAt = extractJsonValue(json, "createdAt").toLongOrNull() ?: 0L
-        val updatedAt = extractJsonValue(json, "updatedAt").toLongOrNull() ?: 0L
+    private suspend fun loadProfileFromFirestore(): CoupleProfile? {
+        return try {
+            val currentUser = auth.currentUser
+            if (currentUser == null) {
+                Log.e(TAG, "User not authenticated")
+                return null
+            }
 
-        return CoupleProfile(
-            id = id,
-            partner1Name = partner1Name,
-            partner2Name = partner2Name,
-            email = email,
-            phone = phone,
-            address = address,
-            profilePhotoPath = profilePhotoPath,
-            createdAt = createdAt,
-            updatedAt = updatedAt
-        )
-    }
+            val document = firestore.collection(COLLECTION_COUPLE_PROFILES)
+                .document(currentUser.uid)
+                .get()
+                .await()
 
-    private fun extractJsonValue(json: String, key: String): String {
-        val pattern = "\"$key\"\\s*:\\s*\"([^\"]*)\""
-        val regex = Regex(pattern)
-        val matchResult = regex.find(json)
-        return matchResult?.groupValues?.get(1) ?: ""
+            if (document.exists()) {
+                val data = document.data!!
+                CoupleProfile(
+                    id = data["id"] as? String ?: "",
+                    partner1Name = data["partner1Name"] as? String ?: "",
+                    partner2Name = data["partner2Name"] as? String ?: "",
+                    email = data["email"] as? String ?: "",
+                    phone = data["phone"] as? String ?: "",
+                    address = data["address"] as? String ?: "",
+                    weddingDate = data["weddingDate"] as? String ?: "",
+                    profilePhotoPath = "",
+                    createdAt = data["createdAt"] as? Long ?: 0L,
+                    updatedAt = data["updatedAt"] as? Long ?: 0L
+                )
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading profile from Firestore", e)
+            null
+        }
     }
 
     private fun populateFields() {
@@ -465,13 +562,25 @@ class CoupleProfileActivity : BaseActivity() {
             etPhone.setText(profile.phone)
             etAddress.setText(profile.address)
 
-            if (profile.profilePhotoPath.isNotEmpty()) {
-                currentPhotoPath = profile.profilePhotoPath
-                val bitmap = BitmapFactory.decodeFile(currentPhotoPath)
-                if (bitmap != null) {
-                    ivProfilePhoto.setImageBitmap(bitmap)
+            // Handle wedding date
+            if (profile.weddingDate.isNotEmpty()) {
+                try {
+                    // get  stored date
+                    val storedDate = storeDateFormat.parse(profile.weddingDate)
+                    if (storedDate != null) {
+                        selectedWeddingDate.time = storedDate
+                        // Display format
+                        val displayDate = displayDateFormat.format(storedDate)
+                        etWeddingDate.setText(displayDate)
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error parsing wedding date: ${profile.weddingDate}", e)
+
+                    etWeddingDate.setText("")
                 }
             }
+
+
         }
     }
 
