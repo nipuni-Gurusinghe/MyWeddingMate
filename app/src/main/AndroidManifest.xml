@@ -161,7 +161,9 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
 
-
+        <activity
+            android:name=".repository.PlannerProfileBridge"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
 
 
 

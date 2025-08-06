@@ -9,34 +9,49 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 
 abstract class BaseActivity : AppCompatActivity() {
-    private lateinit var navBar: LinearLayout
+    private var navBar: LinearLayout? = null
 
     protected abstract fun getCurrentNavId(): Int
     protected abstract fun getLayoutResourceId(): Int
 
+    // Override this method in activities that don't have navbar
+    protected open fun hasNavBar(): Boolean = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(getLayoutResourceId())
-        navBar = findViewById(R.id.navBar)
-        setupNavigation()
-        updateNavigationSelection(getCurrentNavId())
+
+        if (hasNavBar()) {
+            try {
+                navBar = findViewById(R.id.navBar)
+                navBar?.let {
+                    setupNavigation()
+                    updateNavigationSelection(getCurrentNavId())
+                }
+            } catch (e: Exception) {
+                // Handle case where navBar doesn't exist in layout
+                android.util.Log.w("BaseActivity", "NavBar not found in layout: ${e.message}")
+            }
+        }
     }
 
     private fun setupNavigation() {
-        navBar.findViewById<LinearLayout>(R.id.navHome)?.setOnClickListener {
-            navigateToActivity(HomeActivity::class.java, R.id.navHome)
-        }
+        navBar?.let { nav ->
+            nav.findViewById<LinearLayout>(R.id.navHome)?.setOnClickListener {
+                navigateToActivity(HomeActivity::class.java, R.id.navHome)
+            }
 
-        navBar.findViewById<LinearLayout>(R.id.navChat)?.setOnClickListener {
-            navigateToActivity(ChatWithPlannerActivity::class.java, R.id.navChat)
-        }
+            nav.findViewById<LinearLayout>(R.id.navChat)?.setOnClickListener {
+                navigateToActivity(ChatWithPlannerActivity::class.java, R.id.navChat)
+            }
 
-        navBar.findViewById<LinearLayout>(R.id.navProfile)?.setOnClickListener {
-            navigateToActivity(CoupleProfileActivity::class.java, R.id.navProfile)
-        }
+            nav.findViewById<LinearLayout>(R.id.navProfile)?.setOnClickListener {
+                navigateToActivity(CoupleProfileActivity::class.java, R.id.navProfile)
+            }
 
-        navBar.findViewById<LinearLayout>(R.id.navWishlist)?.setOnClickListener {
-            navigateToActivity(FavoritesActivity::class.java, R.id.navWishlist)
+            nav.findViewById<LinearLayout>(R.id.navWishlist)?.setOnClickListener {
+                navigateToActivity(WishlistActivity::class.java, R.id.navWishlist)
+            }
         }
     }
 
@@ -50,18 +65,22 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     private fun updateNavigationSelection(selectedId: Int) {
-        resetNavigationItems()
-        highlightNavigationItem(selectedId)
+        navBar?.let {
+            resetNavigationItems()
+            highlightNavigationItem(selectedId)
+        }
     }
 
     private fun resetNavigationItems() {
-        listOf(R.id.navHome, R.id.navChat, R.id.navProfile, R.id.navWishlist).forEach { itemId ->
-            navBar.findViewById<LinearLayout>(itemId)?.let { setNavigationItemUnselected(it) }
+        navBar?.let { nav ->
+            listOf(R.id.navHome, R.id.navChat, R.id.navProfile, R.id.navWishlist).forEach { itemId ->
+                nav.findViewById<LinearLayout>(itemId)?.let { setNavigationItemUnselected(it) }
+            }
         }
     }
 
     private fun highlightNavigationItem(itemId: Int) {
-        navBar.findViewById<LinearLayout>(itemId)?.let { setNavigationItemSelected(it) }
+        navBar?.findViewById<LinearLayout>(itemId)?.let { setNavigationItemSelected(it) }
     }
 
     private fun setNavigationItemSelected(layout: LinearLayout) {

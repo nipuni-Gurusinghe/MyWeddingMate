@@ -8,7 +8,9 @@
     android:background="@color/background_light"
     tools:context=".repository.PlannerProfileBridge">
 
+    <!-- AppBar at the top -->
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:elevation="4dp"
@@ -24,15 +26,19 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- Main content that scrolls -->
     <androidx.core.widget.NestedScrollView
-        android:layout_width="514dp"
-        android:layout_height="1419dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="@color/secondary_color"
+            android:paddingBottom="80dp">
 
             <!-- Header Card -->
             <androidx.cardview.widget.CardView
@@ -47,7 +53,8 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:orientation="vertical"
-                    android:padding="24dp">
+                    android:padding="24dp"
+                    android:background="@color/white">
 
                     <ImageView
                         android:id="@+id/imgPlannerProfileLarge"
@@ -138,7 +145,6 @@
 
                     </LinearLayout>
 
-
                 </LinearLayout>
 
             </androidx.cardview.widget.CardView>
@@ -156,7 +162,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="16dp"
+                    android:background="@color/white">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -231,7 +238,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="16dp"
+                    android:background="@color/white">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -268,7 +276,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="16dp"
+                    android:background="@color/white">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -303,7 +312,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="16dp"
+                    android:background="@color/white">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -324,7 +334,7 @@
 
             </androidx.cardview.widget.CardView>
 
-            <!-- Portfolio Card (Optional) -->
+            <!-- Portfolio Card -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -337,7 +347,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="16dp"
+                    android:background="@color/white">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -371,18 +382,16 @@
                 android:textStyle="bold"
                 app:cornerRadius="30dp" />
 
-            <!--  NavBar calling -->
-            <include
-                android:id="@+id/navBar"
-                layout="@layout/nav_bar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true" />
-
-
         </LinearLayout>
 
-
     </androidx.core.widget.NestedScrollView>
+
+    <!-- NavBar fixed at bottom -->
+    <include
+        android:id="@+id/navBar"
+        layout="@layout/nav_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

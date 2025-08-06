@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
+<!--item_wedding_planner.xml-->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -25,7 +25,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="16dp"
+                android:background="@color/secondary_color">
+
 
                 <!-- Header Section -->
                 <LinearLayout
@@ -190,11 +192,11 @@
     </androidx.core.widget.NestedScrollView>
 
 
-    <include
-        android:id="@+id/navBar"
-        layout="@layout/nav_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom" />
+<!--    <include-->
+<!--        android:id="@+id/navBar"-->
+<!--        layout="@layout/nav_bar"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_gravity="bottom" />-->
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
