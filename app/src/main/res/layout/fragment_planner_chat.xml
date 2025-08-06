@@ -122,4 +122,5 @@
             app:backgroundTint="@color/primary_brown"
             app:tint="@color/on_primary"/>
     </LinearLayout>
+
 </RelativeLayout>

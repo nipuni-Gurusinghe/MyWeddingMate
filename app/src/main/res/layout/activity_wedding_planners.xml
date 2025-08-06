@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="@color/background_light"
     tools:context=".WeddingPlannersActivity">
-
+<!--activity_wedding_planners.xml-->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
