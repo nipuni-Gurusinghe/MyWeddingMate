@@ -47,13 +47,7 @@
                 android:textColor="@color/text_primary"
                 android:layout_marginBottom="8dp" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Browse through our curated list of professional wedding planners and find the one that matches your vision and budget."
-                android:textSize="14sp"
-                android:textColor="@color/text_secondary"
-                android:layout_marginBottom="16dp" />
+
 
             <!-- Progress Indicator -->
             <com.google.android.material.progressindicator.CircularProgressIndicator

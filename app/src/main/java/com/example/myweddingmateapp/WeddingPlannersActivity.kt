@@ -73,8 +73,7 @@ class WeddingPlannersActivity : AppCompatActivity() {
         }
     }
 
-    // Setup RecyclerView with adapter
-    // Setup RecyclerView with adapter - SIMPLIFIED VERSION
+
     private fun setupRecyclerView() {
         plannerAdapter = WeddingPlannerAdapter(
             context = this,
