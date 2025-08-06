@@ -1,7 +1,7 @@
 package com.example.myweddingmateapp.adapters
 
-
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,10 +12,8 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.example.myweddingmateapp.models.WeddingPlanner
 import com.example.myweddingmateapp.R
 
-
 class WeddingPlannerAdapter(
     private val context: Context,
-    private var planners: MutableList<WeddingPlanner> = mutableListOf(),
     private val onPlannerClick: (WeddingPlanner) -> Unit,
     private val onViewProfileClick: (WeddingPlanner) -> Unit
 ) : RecyclerView.Adapter<WeddingPlannerAdapter.PlannerViewHolder>() {
@@ -23,6 +21,8 @@ class WeddingPlannerAdapter(
     companion object {
         private const val TAG = "WeddingPlannerAdapter"
     }
+
+    private var planners: MutableList<WeddingPlanner> = mutableListOf()
 
     /**
      * ViewHolder for planner items
@@ -42,26 +42,45 @@ class WeddingPlannerAdapter(
         val cardContainer: androidx.cardview.widget.CardView = itemView.findViewById(R.id.cardPlannerContainer)
 
         fun bind(planner: WeddingPlanner) {
+            Log.d(TAG, "Binding planner: ${planner.name}")
+
             // Set planner name
             plannerName.text = planner.name
 
             // Set rating and reviews
-            plannerRating.text = "${planner.getRatingText()} ${planner.getReviewText()}"
+            val ratingText = if (planner.reviewCount > 0) {
+                "★ ${planner.rating} (${planner.reviewCount} reviews)"
+            } else {
+                "★ ${planner.rating} (No reviews yet)"
+            }
+            plannerRating.text = ratingText
 
             // Set location
-            plannerLocation.text = planner.location.ifEmpty { "Location not specified" }
+            plannerLocation.text = if (planner.location.isNotEmpty()) {
+                "📍 ${planner.location}"
+            } else {
+                "📍 Location not specified"
+            }
 
             // Set experience
-            plannerExperience.text = planner.getExperienceText()
+            plannerExperience.text = if (planner.experience > 0) {
+                "${planner.experience} years experience"
+            } else {
+                "New to the field"
+            }
 
             // Set specialties
-            plannerSpecialties.text = planner.getSpecialtiesText()
+            plannerSpecialties.text = if (planner.specialties.isNotEmpty()) {
+                planner.specialties.joinToString(", ")
+            } else {
+                "Wedding Planning"
+            }
 
             // Set price range
             plannerPriceRange.text = if (planner.priceRange.isNotEmpty()) {
-                "Budget: ${planner.priceRange}"
+                planner.priceRange
             } else {
-                "Price: Contact for quote"
+                "Contact for quote"
             }
 
             // Set bio (truncated)
@@ -76,7 +95,7 @@ class WeddingPlannerAdapter(
             }
 
             // Set availability badge
-            availabilityBadge.text = planner.getAvailabilityText()
+            availabilityBadge.text = if (planner.isAvailable) "Available" else "Unavailable"
             availabilityBadge.setBackgroundResource(
                 if (planner.isAvailable) R.drawable.bg_available_badge
                 else R.drawable.bg_unavailable_badge
@@ -87,18 +106,21 @@ class WeddingPlannerAdapter(
 
             // Set click listeners
             btnSelectPlanner.setOnClickListener {
+                Log.d(TAG, "Select button clicked for: ${planner.name}")
                 onPlannerClick(planner)
             }
 
             btnViewProfile.setOnClickListener {
+                Log.d(TAG, "View profile button clicked for: ${planner.name}")
                 onViewProfileClick(planner)
             }
 
             cardContainer.setOnClickListener {
+                Log.d(TAG, "Card clicked for: ${planner.name}")
                 onViewProfileClick(planner)
             }
 
-            // Disable select button if not available
+            // Enable/disable select button based on availability
             btnSelectPlanner.isEnabled = planner.isAvailable
             btnSelectPlanner.alpha = if (planner.isAvailable) 1.0f else 0.6f
         }
@@ -131,50 +153,26 @@ class WeddingPlannerAdapter(
     override fun getItemCount(): Int = planners.size
 
     /**
-     * Update the planners list
+     * Update the planners list - Simple version
      */
     fun updatePlanners(newPlanners: List<WeddingPlanner>) {
+        Log.d(TAG, "updatePlanners called with ${newPlanners.size} planners")
+
         planners.clear()
         planners.addAll(newPlanners)
+
+        Log.d(TAG, "Planners updated. Current size: ${planners.size}")
+        for (planner in planners) {
+            Log.d(TAG, "Planner: ${planner.name} - ${planner.email}")
+        }
+
         notifyDataSetChanged()
     }
 
     /**
-     * Add a single planner
+     * Get all planners
      */
-    fun addPlanner(planner: WeddingPlanner) {
-        planners.add(planner)
-        notifyItemInserted(planners.size - 1)
-    }
-
-    /**
-     * Remove a planner
-     */
-    fun removePlanner(plannerId: String) {
-        val position = planners.indexOfFirst { it.id == plannerId }
-        if (position != -1) {
-            planners.removeAt(position)
-            notifyItemRemoved(position)
-        }
-    }
-
-    /**
-     * Update a specific planner
-     */
-    fun updatePlanner(updatedPlanner: WeddingPlanner) {
-        val position = planners.indexOfFirst { it.id == updatedPlanner.id }
-        if (position != -1) {
-            planners[position] = updatedPlanner
-            notifyItemChanged(position)
-        }
-    }
-
-    /**
-     * Get planner at position
-     */
-    fun getPlannerAt(position: Int): WeddingPlanner? {
-        return if (position in 0 until planners.size) planners[position] else null
-    }
+    fun getPlanners(): List<WeddingPlanner> = planners.toList()
 
     /**
      * Clear all planners
@@ -183,33 +181,5 @@ class WeddingPlannerAdapter(
         val size = planners.size
         planners.clear()
         notifyItemRangeRemoved(0, size)
-    }
-
-    /**
-     * Filter planners by availability
-     */
-    fun filterByAvailability(availableOnly: Boolean) {
-        val filteredPlanners = if (availableOnly) {
-            planners.filter { it.isAvailable }
-        } else {
-            planners
-        }
-        updatePlanners(filteredPlanners)
-    }
-
-    /**
-     * Sort planners by rating (high to low)
-     */
-    fun sortByRating() {
-        planners.sortByDescending { it.rating }
-        notifyDataSetChanged()
-    }
-
-    /**
-     * Sort planners by experience (high to low)
-     */
-    fun sortByExperience() {
-        planners.sortByDescending { it.experience }
-        notifyDataSetChanged()
     }
 }
