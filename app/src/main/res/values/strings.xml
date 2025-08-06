@@ -105,6 +105,12 @@
     <string name="wedding_car_image_desc">Wedding car service image</string>
     <string name="beautician_image_desc">Bridal beautician photo</string>
     <string name="please_log_in_to_view_favorites">Please log in to view your favorites.</string>
+    <string name="lkr_0">LKR 0</string>
+    <string name="set_budget_title">Set Budget</string>
+    <string name="currency_hint">Select Currency</string>
+    <string name="amount_hint">Add budget Amount</string>
+    <string name="reminder_date_hint">Add Reminder Date</string>
+    <string name="save">Add budget</string>
 
 </resources>
 

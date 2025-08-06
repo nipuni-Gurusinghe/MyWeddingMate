@@ -1,60 +1,132 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="24dp"
+    android:focusableInTouchMode="true">
 
     <TextView
+        android:id="@+id/textTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Set Budget"
-        android:textSize="18sp"
+        android:text="@string/set_budget_title"
+        android:textSize="22sp"
+        android:textColor="?attr/colorOnSurface"
         android:textStyle="bold"
-        android:gravity="center"/>
+        android:gravity="center"
+        android:layout_marginBottom="24dp"
+        android:letterSpacing="0.03"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="16dp">
+        android:gravity="center_vertical">
 
-        <EditText
-            android:id="@+id/editBudget"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputLayoutCurrency"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:inputType="numberDecimal"
-            android:hint="Enter amount"/>
+            android:layout_weight="0.4"
+            android:hint="@string/currency_hint"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            app:startIconTint="?attr/colorPrimary">
 
-        <TextView
-            android:layout_width="wrap_content"
+            <AutoCompleteTextView
+                android:id="@+id/autoCompleteCurrency"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                android:clickable="true"
+                android:focusable="false"
+                android:importantForAutofill="yes"
+                android:autofillHints="currency"
+               />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputLayoutBudget"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="USD"
-            android:layout_marginStart="8dp"
-            android:textSize="16sp"/>
+            android:layout_weight="0.6"
+            android:layout_marginStart="16dp"
+            android:hint="@string/amount_hint"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+
+            app:startIconTint="?attr/colorPrimary"
+
+            app:helperTextEnabled="true">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editBudget"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:imeOptions="actionNext"
+                android:importantForAutofill="yes"
+                android:autofillHints="transactionAmount"
+                android:gravity="end"/>
+        </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textInputLayoutReminder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/reminder_date_hint"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_marginTop="16dp"
+        app:endIconMode="custom"
+        app:endIconDrawable="@drawable/ic_calendar"
+
+        app:endIconTint="?attr/colorPrimary"
+
+        app:helperTextEnabled="true">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editReminderDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none"
+            android:clickable="true"
+            android:focusable="false"
+            android:importantForAutofill="yes"
+            android:autofillHints="date"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="24dp">
+        android:layout_marginTop="32dp"
+        android:divider="@drawable/divider_vertical"
+        android:showDividers="middle"
+        android:dividerPadding="12dp">
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCancel"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_weight="1"
-            android:text="Cancel"
-            android:layout_marginEnd="8dp"/>
+            android:text="@string/cancel"
+            android:textAllCaps="false"
+            android:layout_marginEnd="6dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"/>
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSave"
+            style="@style/Widget.MaterialComponents.Button"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_weight="1"
-            android:text="Save"
-            android:layout_marginStart="8dp"/>
+            android:text="@string/save"
+            android:textAllCaps="false"
+            android:layout_marginStart="6dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"/>
     </LinearLayout>
 </LinearLayout>

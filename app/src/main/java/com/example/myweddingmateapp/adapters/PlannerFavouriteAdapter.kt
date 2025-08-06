@@ -10,7 +10,8 @@ import com.example.myweddingmateapp.models.PlannerFavouriteItem
 class PlannerFavouriteAdapter(
     private var items: List<PlannerFavouriteItem>,
     private val onItemClick: (PlannerFavouriteItem) -> Unit,
-    private val onFavoriteToggle: (PlannerFavouriteItem) -> Unit
+    private val onFavoriteToggle: (PlannerFavouriteItem) -> Unit,
+    private val onBudgetClick: (PlannerFavouriteItem) -> Unit
 ) : RecyclerView.Adapter<PlannerFavouriteAdapter.PlannerFavouriteViewHolder>() {
 
     inner class PlannerFavouriteViewHolder(val binding: ItemPlannerFavouriteBinding) :
@@ -20,10 +21,11 @@ class PlannerFavouriteAdapter(
             binding.tvCategory.text = item.category
             binding.tvVendorId.text = item.vendorId
             binding.tvAddedDate.text = "Added: ${item.addedDate}"
-            binding.tvBudget.text = if (item.budget > 0) "$${"%,.2f".format(item.budget)}" else "Set Budget"
+            binding.tvBudget.text = if (item.budget > 0) "LKR ${"%,.2f".format(item.budget)}" else "Set Budget"
             binding.ivFavorite.setImageResource(if (item.isFavorite) R.drawable.ic_heart_filled else R.drawable.ic_favorite_border)
             binding.ivFavorite.setOnClickListener { onFavoriteToggle(item) }
             binding.root.setOnClickListener { onItemClick(item) }
+            binding.tvBudget.setOnClickListener { onBudgetClick(item) }
         }
     }
 

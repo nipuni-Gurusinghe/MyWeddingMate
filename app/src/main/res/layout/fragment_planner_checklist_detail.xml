@@ -75,7 +75,7 @@
                 android:id="@+id/textTotalBudget"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="$0"
+                android:text="@string/lkr_0"
                 android:textSize="18sp"
                 android:textColor="#880E4F"
                 android:textStyle="bold"/>

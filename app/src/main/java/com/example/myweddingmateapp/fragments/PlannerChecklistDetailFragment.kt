@@ -8,10 +8,10 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myweddingmateapp.adapters.PlannerFavouriteAdapter
 import com.example.myweddingmateapp.databinding.FragmentPlannerChecklistDetailBinding
+import com.example.myweddingmateapp.dialog.BudgetDialog
 import com.example.myweddingmateapp.models.PlannerFavouriteItem
 import com.example.myweddingmateapp.models.User
 import com.google.firebase.firestore.FirebaseFirestore
-import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -20,9 +20,7 @@ class PlannerChecklistDetailFragment : Fragment() {
     private val binding get() = _binding!!
     private val db = FirebaseFirestore.getInstance()
     private val dateFormat = SimpleDateFormat("MMMM d, yyyy", Locale.getDefault())
-    private val currencyFormat = NumberFormat.getCurrencyInstance(Locale.US)
     private lateinit var adapter: PlannerFavouriteAdapter
-    private var totalBudget: Double = 0.0
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,23 +43,21 @@ class PlannerChecklistDetailFragment : Fragment() {
         adapter = PlannerFavouriteAdapter(
             emptyList(),
             onItemClick = { showItemDetails(it) },
-            onFavoriteToggle = { toggleFavoriteStatus(it) }
+            onFavoriteToggle = { toggleFavoriteStatus(it) },
+            onBudgetClick = { showBudgetDialog(it) }
         )
         binding.recyclerChecklistItems.adapter = adapter
     }
 
     private fun setupDetailScreen(userId: String) {
         binding.progressBar.visibility = View.VISIBLE
-
         db.collection("users").document(userId).get()
             .addOnSuccessListener { document ->
                 document.toObject(User::class.java)?.let {
                     binding.toolbar.title = "${it.name}'s Favorites"
                 }
             }
-
         loadFavoriteItems(userId)
-
         binding.toolbar.setNavigationOnClickListener {
             parentFragmentManager.popBackStack()
         }
@@ -76,10 +72,12 @@ class PlannerChecklistDetailFragment : Fragment() {
                 val favorites = documents.mapNotNull {
                     PlannerFavouriteItem(
                         id = it.id,
+                        userId = userId,
                         category = it.getString("category") ?: "Uncategorized",
                         vendorId = it.getString("vendorId") ?: "",
                         addedDate = it.getDate("addedDate")?.let { date -> dateFormat.format(date) } ?: "Unknown date",
                         budget = it.getDouble("budget") ?: 0.0,
+                        currency = it.getString("currency") ?: "LKR",
                         isFavorite = it.getBoolean("isFavorite") ?: true,
                         notes = it.getString("notes") ?: ""
                     )
@@ -94,7 +92,6 @@ class PlannerChecklistDetailFragment : Fragment() {
     }
 
     private fun showItemDetails(item: PlannerFavouriteItem) {
-        // Implement item details display
     }
 
     private fun toggleFavoriteStatus(item: PlannerFavouriteItem) {
@@ -109,10 +106,26 @@ class PlannerChecklistDetailFragment : Fragment() {
             }
     }
 
+    private fun showBudgetDialog(item: PlannerFavouriteItem) {
+        BudgetDialog.show(requireContext(), item) { updatedBudget: Double, updatedCurrency: String ->
+            db.collection("userFavorites")
+                .document(item.userId)
+                .collection("items")
+                .document(item.id)
+                .update(mapOf(
+                    "budget" to updatedBudget,
+                    "currency" to updatedCurrency
+                ))
+                .addOnSuccessListener {
+                    loadFavoriteItems(item.userId)
+                }
+        }
+    }
+
     private fun updateCounts(favorites: List<PlannerFavouriteItem>) {
         binding.textTotalCount.text = favorites.size.toString()
         binding.textCompletedCount.text = favorites.count { it.isFavorite }.toString()
-        binding.textTotalBudget.text = currencyFormat.format(favorites.sumOf { it.budget })
+        binding.textTotalBudget.text = "LKR ${favorites.sumOf { it.budget }}"
     }
 
     override fun onDestroyView() {
