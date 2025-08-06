@@ -6,6 +6,16 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+
+    <!--    camera-->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- gallery -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    android:maxSdkVersion="28" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -78,10 +88,6 @@
         <activity
             android:name=".InvitationActivity"
             android:exported="false" />
-<!--        <activity-->
-<!--            android:name=".FavoritesActivity"-->
-<!--            android:exported="false" />-->
-
 
         <activity android:name=".LoginActivity"
             android:exported="false"/>
@@ -97,7 +103,7 @@
             
         </activity>
 
-
+<!--couple profile-->
  <activity
             android:name=".CoupleProfileActivity"
             android:exported="true"
@@ -107,16 +113,16 @@
         
         </activity>
 
-        <!-- Home Activity -->
+        <!-- Home  -->
         <activity
             android:name=".HomeActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Profile" />
 
-        <!-- Todo Activity -->
+
         <activity
-            android:name=".TodoActivity"
+            android:name=".ChatWithPlannerActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Profile" />
@@ -128,14 +134,14 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Profile" />
 
-<!--        &lt;!&ndash; Budget Overview Activity &ndash;&gt;-->
-<!--        <activity-->
-<!--            android:name=".BudgetOverviewActivity"-->
-<!--            android:exported="false"-->
-<!--            android:screenOrientation="portrait"-->
-<!--            android:theme="@style/Theme.Profile" />-->
 
-        <!-- Couple Dashboard Activity -->
+        <activity
+            android:name=".BudgetOverviewActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Profile" />
+
+
         <activity
             android:name=".CoupleDashboardActivity"
             android:exported="false"
@@ -143,13 +149,10 @@
             android:theme="@style/Theme.Profile" />
 
 
-
-<!--        &lt;!&ndash; Planner Dashboard Activity &ndash;&gt;-->
-<!--        <activity-->
-<!--            android:name=".PlannerDashboardActivity"-->
-<!--            android:exported="false"-->
-<!--            android:screenOrientation="portrait"-->
-<!--            android:theme="@style/Theme.Profile" />-->
+        <activity
+            android:name=".CheckListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Profile" />
 
 
         <activity

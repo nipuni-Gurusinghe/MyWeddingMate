@@ -1,29 +1,25 @@
 package com.example.myweddingmateapp
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.button.MaterialButton
 
-class BudgetOverviewActivity : AppCompatActivity() {
+class CheckListActivity : AppCompatActivity() {
 
     companion object {
-        private const val TAG = "BudgetOverviewActivity"
+        private const val TAG = "CheckListActivity"
     }
 
     private lateinit var btnBack: ImageButton
     private lateinit var tvTitle: TextView
-    private lateinit var btnCheckList: MaterialButton
-    private lateinit var tvBudgetTitle: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_budget_view)
+        setContentView(R.layout.activity_check_list)
 
-        Log.d(TAG, "BudgetOverviewActivity created successfully")
+        Log.d(TAG, "CheckListActivity created successfully")
 
         initializeViews()
         setupClickListeners()
@@ -35,10 +31,6 @@ class BudgetOverviewActivity : AppCompatActivity() {
 
             btnBack = findViewById(R.id.btn_back)
             tvTitle = findViewById(R.id.tv_title)
-            btnCheckList = findViewById(R.id.btnCheckList)
-
-
-            tvBudgetTitle = findViewById(R.id.tv_title)
 
             Log.d(TAG, "Views initialized successfully")
         } catch (e: Exception) {
@@ -49,16 +41,10 @@ class BudgetOverviewActivity : AppCompatActivity() {
 
     private fun setupClickListeners() {
         try {
-
+            // Back btn
             btnBack.setOnClickListener {
                 Log.d(TAG, "Back button clicked")
                 onBackPressed()
-            }
-
-            // Check List btn  ........................
-            btnCheckList.setOnClickListener {
-                Log.d(TAG, "Check List button clicked")
-                navigateToCheckList()
             }
 
             Log.d(TAG, "Click listeners setup completed")
@@ -67,31 +53,10 @@ class BudgetOverviewActivity : AppCompatActivity() {
         }
     }
 
-    private fun navigateToCheckList() {
-        try {
-            val intent = Intent(this, CheckListActivity::class.java)
-            startActivity(intent)
-
-
-            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
-
-            Log.d(TAG, "Navigating to CheckListActivity")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error navigating to CheckListActivity", e)
-
-            showError("Unable to open check list. Please try again.")
-        }
-    }
-
     private fun setupContent() {
         try {
 
-            tvTitle.text = "Budget Overview"
-
-
-            if (::tvBudgetTitle.isInitialized) {
-                tvBudgetTitle.text = "Display budget"
-            }
+            tvTitle.text = "Wedding Check List"
 
             Log.d(TAG, "Content setup completed")
         } catch (e: Exception) {
@@ -101,9 +66,8 @@ class BudgetOverviewActivity : AppCompatActivity() {
 
     private fun createFallbackLayout() {
         try {
-
             val textView = TextView(this).apply {
-                text = "Budget Overview\n\nThis feature is coming soon!"
+                text = "Wedding Check List"
                 textSize = 18f
                 setPadding(32, 32, 32, 32)
             }
@@ -111,15 +75,6 @@ class BudgetOverviewActivity : AppCompatActivity() {
             Log.d(TAG, "Fallback layout created")
         } catch (e: Exception) {
             Log.e(TAG, "Error creating fallback layout", e)
-        }
-    }
-
-    private fun showError(message: String) {
-        try {
-
-            android.widget.Toast.makeText(this, message, android.widget.Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error showing error message", e)
         }
     }
 
@@ -131,6 +86,6 @@ class BudgetOverviewActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d(TAG, "BudgetOverviewActivity destroyed")
+        Log.d(TAG, "CheckListActivity destroyed")
     }
 }

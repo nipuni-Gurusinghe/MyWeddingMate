@@ -17,10 +17,7 @@ class CoupleDashboardActivity : BaseActivity() {
     }
 
     private fun handleInitialNavigation() {
-        // You can add logic here to determine which screen to show first
-        // For example, check if user is logged in, has completed onboarding, etc.
 
-         // For now, let's redirect to HomeActivity by default
         val intent = Intent(this, HomeActivity::class.java)
         startActivity(intent)
         finish()

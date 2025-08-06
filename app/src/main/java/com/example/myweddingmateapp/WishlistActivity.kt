@@ -125,8 +125,8 @@ class WishlistActivity : AppCompatActivity() {
         }
 
         // To-do List button
-        findViewById<LinearLayout>(R.id.navTodo).setOnClickListener {
-            startActivity(Intent(this, TodoActivity::class.java))
+        findViewById<LinearLayout>(R.id.navChat).setOnClickListener {
+            startActivity(Intent(this, ChatWithPlannerActivity::class.java))
             finish()
         }
 
