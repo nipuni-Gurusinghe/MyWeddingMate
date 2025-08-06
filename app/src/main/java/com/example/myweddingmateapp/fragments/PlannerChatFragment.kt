@@ -122,9 +122,7 @@ class PlannerChatFragment : Fragment() {
                 }
             }
 
-        listBinding.fabNewChat.setOnClickListener {
-            Snackbar.make(listBinding.root, "New chat started", Snackbar.LENGTH_SHORT).show()
-        }
+
     }
 
     private fun setupChatScreen(recipientId: String) {
