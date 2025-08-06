@@ -135,27 +135,27 @@
 
                 </LinearLayout>
 
-                <!-- Specialties -->
-                <TextView
-                    android:id="@+id/tvPlannerSpecialties"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:text="Traditional Weddings, Destination Weddings, Budget Planning"
-                    android:textColor="@color/accent"
-                    android:textSize="13sp"
-                    android:textStyle="italic" />
+<!--                &lt;!&ndash; Specialties &ndash;&gt;-->
+<!--                <TextView-->
+<!--                    android:id="@+id/tvPlannerSpecialties"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_marginBottom="8dp"-->
+<!--                    android:text=""-->
+<!--                    android:textColor="@color/accent"-->
+<!--                    android:textSize="13sp"-->
+<!--                    android:textStyle="italic" />-->
 
-                <!-- Bio -->
-                <TextView
-                    android:id="@+id/tvPlannerBio"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    android:lineSpacingExtra="2dp"
-                    android:text="Professional wedding planner with passion for creating unforgettable experiences..."
-                    android:textColor="@color/text_primary"
-                    android:textSize="14sp" />
+<!--                &lt;!&ndash; Bio &ndash;&gt;-->
+<!--                <TextView-->
+<!--                    android:id="@+id/tvPlannerBio"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_marginBottom="16dp"-->
+<!--                    android:lineSpacingExtra="2dp"-->
+<!--                    android:text=""-->
+<!--                    android:textColor="@color/text_primary"-->
+<!--                    android:textSize="14sp" />-->
 
                 <!-- Action Buttons -->
                 <LinearLayout
@@ -172,7 +172,8 @@
                         android:layout_marginEnd="8dp"
                         android:backgroundTint="@color/primary"
                         android:text="View Profile"
-                        android:textSize="12sp" />
+                        android:textSize="14sp"
+                        android:textColor="@color/black"/>
 
                     <Button
                         android:id="@+id/btnSelectPlanner"
@@ -181,7 +182,8 @@
                         android:layout_height="wrap_content"
                         android:backgroundTint="@color/primary"
                         android:text="Select Planner"
-                        android:textSize="12sp" />
+                        android:textSize="14sp"
+                        android:textColor="@color/black"/>
 
                 </LinearLayout>
 

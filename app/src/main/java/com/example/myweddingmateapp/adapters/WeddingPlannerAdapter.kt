@@ -33,9 +33,9 @@ class WeddingPlannerAdapter(
         val plannerRating: TextView = itemView.findViewById(R.id.tvPlannerRating)
         val plannerLocation: TextView = itemView.findViewById(R.id.tvPlannerLocation)
         val plannerExperience: TextView = itemView.findViewById(R.id.tvPlannerExperience)
-        val plannerSpecialties: TextView = itemView.findViewById(R.id.tvPlannerSpecialties)
+       // val plannerSpecialties: TextView = itemView.findViewById(R.id.tvPlannerSpecialties)
         val plannerPriceRange: TextView = itemView.findViewById(R.id.tvPlannerPriceRange)
-        val plannerBio: TextView = itemView.findViewById(R.id.tvPlannerBio)
+       // val plannerBio: TextView = itemView.findViewById(R.id.tvPlannerBio)
         val availabilityBadge: TextView = itemView.findViewById(R.id.tvAvailabilityBadge)
         val btnSelectPlanner: Button = itemView.findViewById(R.id.btnSelectPlanner)
         val btnViewProfile: Button = itemView.findViewById(R.id.btnViewProfile)
@@ -69,12 +69,12 @@ class WeddingPlannerAdapter(
                 "New to the field"
             }
 
-            // Set specialties
-            plannerSpecialties.text = if (planner.specialties.isNotEmpty()) {
-                planner.specialties.joinToString(", ")
-            } else {
-                "Wedding Planning"
-            }
+//            // Set specialties
+//            plannerSpecialties.text = if (planner.specialties.isNotEmpty()) {
+//                planner.specialties.joinToString(", ")
+//            } else {
+//                "Wedding Planning"
+//            }
 
             // Set price range
             plannerPriceRange.text = if (planner.priceRange.isNotEmpty()) {
@@ -83,16 +83,16 @@ class WeddingPlannerAdapter(
                 "Contact for quote"
             }
 
-            // Set bio (truncated)
-            plannerBio.text = if (planner.bio.isNotEmpty()) {
-                if (planner.bio.length > 120) {
-                    "${planner.bio.substring(0, 120)}..."
-                } else {
-                    planner.bio
-                }
-            } else {
-                "Professional wedding planner dedicated to making your special day perfect."
-            }
+//            // Set bio (truncated)
+//            plannerBio.text = if (planner.bio.isNotEmpty()) {
+//                if (planner.bio.length > 120) {
+//                    "${planner.bio.substring(0, 120)}..."
+//                } else {
+//                    planner.bio
+//                }
+//            } else {
+//                "Professional wedding planner dedicated to making your special day perfect."
+//            }
 
             // Set availability badge
             availabilityBadge.text = if (planner.isAvailable) "Available" else "Unavailable"
