@@ -64,6 +64,28 @@
                 android:text=" total"
                 android:textSize="16sp"
                 android:textColor="#880E4F"/>
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="20dp"
+                android:background="#880E4F"
+                android:layout_marginHorizontal="8dp"/>
+
+            <TextView
+                android:id="@+id/textTotalBudget"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="$0"
+                android:textSize="18sp"
+                android:textColor="#880E4F"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" total"
+                android:textSize="16sp"
+                android:textColor="#880E4F"/>
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView

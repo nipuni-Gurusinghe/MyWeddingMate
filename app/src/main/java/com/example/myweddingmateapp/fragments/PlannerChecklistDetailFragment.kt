@@ -6,12 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.myweddingmateapp.adapters.FavoriteItemAdapter
+import com.example.myweddingmateapp.adapters.PlannerFavouriteAdapter
 import com.example.myweddingmateapp.databinding.FragmentPlannerChecklistDetailBinding
-import com.example.myweddingmateapp.models.FavoriteItem
-
+import com.example.myweddingmateapp.models.PlannerFavouriteItem
 import com.example.myweddingmateapp.models.User
 import com.google.firebase.firestore.FirebaseFirestore
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -19,8 +19,10 @@ class PlannerChecklistDetailFragment : Fragment() {
     private var _binding: FragmentPlannerChecklistDetailBinding? = null
     private val binding get() = _binding!!
     private val db = FirebaseFirestore.getInstance()
-    private val dateFormat = SimpleDateFormat("MMMM d, yyyy hh:mm:ss a", Locale.getDefault())
-    private lateinit var adapter: FavoriteItemAdapter
+    private val dateFormat = SimpleDateFormat("MMMM d, yyyy", Locale.getDefault())
+    private val currencyFormat = NumberFormat.getCurrencyInstance(Locale.US)
+    private lateinit var adapter: PlannerFavouriteAdapter
+    private var totalBudget: Double = 0.0
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,7 +42,11 @@ class PlannerChecklistDetailFragment : Fragment() {
 
     private fun setupRecyclerView() {
         binding.recyclerChecklistItems.layoutManager = LinearLayoutManager(requireContext())
-        adapter = FavoriteItemAdapter(emptyList()) { }
+        adapter = PlannerFavouriteAdapter(
+            emptyList(),
+            onItemClick = { showItemDetails(it) },
+            onFavoriteToggle = { toggleFavoriteStatus(it) }
+        )
         binding.recyclerChecklistItems.adapter = adapter
     }
 
@@ -49,8 +55,8 @@ class PlannerChecklistDetailFragment : Fragment() {
 
         db.collection("users").document(userId).get()
             .addOnSuccessListener { document ->
-                document.toObject(User::class.java)?.let { user ->
-                    binding.toolbar.title = "${user.name}'s Favorites"
+                document.toObject(User::class.java)?.let {
+                    binding.toolbar.title = "${it.name}'s Favorites"
                 }
             }
 
@@ -67,18 +73,19 @@ class PlannerChecklistDetailFragment : Fragment() {
             .collection("items")
             .get()
             .addOnSuccessListener { documents ->
-                val favorites = documents.mapNotNull { doc ->
-                    FavoriteItem(
-                        id = doc.id,
-                        category = doc.getString("category") ?: "",
-                        favoriteId = doc.getString("favoriteId") ?: "",
-                        itemId = doc.getString("itemId") ?: "",
-                        timestamp = doc.getDate("timestamp")?.let { dateFormat.format(it) } ?: ""
+                val favorites = documents.mapNotNull {
+                    PlannerFavouriteItem(
+                        id = it.id,
+                        category = it.getString("category") ?: "Uncategorized",
+                        vendorId = it.getString("vendorId") ?: "",
+                        addedDate = it.getDate("addedDate")?.let { date -> dateFormat.format(date) } ?: "Unknown date",
+                        budget = it.getDouble("budget") ?: 0.0,
+                        isFavorite = it.getBoolean("isFavorite") ?: true,
+                        notes = it.getString("notes") ?: ""
                     )
                 }
-                adapter = FavoriteItemAdapter(favorites) { }
-                binding.recyclerChecklistItems.adapter = adapter
-                updateFavoriteCount(favorites.size)
+                adapter.updateItems(favorites)
+                updateCounts(favorites)
                 binding.progressBar.visibility = View.GONE
             }
             .addOnFailureListener {
@@ -86,8 +93,26 @@ class PlannerChecklistDetailFragment : Fragment() {
             }
     }
 
-    private fun updateFavoriteCount(count: Int) {
-        binding.textTotalCount.text = count.toString()
+    private fun showItemDetails(item: PlannerFavouriteItem) {
+        // Implement item details display
+    }
+
+    private fun toggleFavoriteStatus(item: PlannerFavouriteItem) {
+        val userId = arguments?.getString("userId") ?: return
+        db.collection("userFavorites")
+            .document(userId)
+            .collection("items")
+            .document(item.id)
+            .update("isFavorite", !item.isFavorite)
+            .addOnSuccessListener {
+                loadFavoriteItems(userId)
+            }
+    }
+
+    private fun updateCounts(favorites: List<PlannerFavouriteItem>) {
+        binding.textTotalCount.text = favorites.size.toString()
+        binding.textCompletedCount.text = favorites.count { it.isFavorite }.toString()
+        binding.textTotalBudget.text = currencyFormat.format(favorites.sumOf { it.budget })
     }
 
     override fun onDestroyView() {

@@ -23,10 +23,7 @@ class BudgetDialog(
         val btnSave = findViewById<Button>(R.id.btnSave)
         val btnCancel = findViewById<Button>(R.id.btnCancel)
 
-        // Set current budget if exists
-        if (favoriteItem.budget > 0) {
-            editBudget.setText(favoriteItem.budget.toString())
-        }
+
 
         btnSave.setOnClickListener {
             val budget = editBudget.text.toString().toDoubleOrNull() ?: 0.0

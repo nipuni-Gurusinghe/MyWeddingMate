@@ -19,7 +19,7 @@
             android:layout_height="?attr/actionBarSize"
             app:title="Messages"
             app:titleTextColor="@color/primary_brown"
-            app:navigationIcon="@drawable/ic_menu"
+            app:navigationIcon="@drawable/ic_chat"
             app:navigationIconTint="@color/primary_brown"/>
     </com.google.android.material.appbar.AppBarLayout>
 

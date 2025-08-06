@@ -80,7 +80,7 @@
     <string name="favorite_button_desc">Toggle favorite</string>
     <string name="visit_website">Visit Website</string>
     <string name="venue_rating_format">Rating: %1$.1f (%2$d+ reviews)</string>
-    <string name="favorites_title">My Favorites</string>
+
     <string name="no_favorites_message">No favorites yet\nTap to refresh</string>
     <string name="empty_favorites_desc">Empty favorites icon</string>
     <string name="removed_from_favorites">%s removed from favorites</string>
