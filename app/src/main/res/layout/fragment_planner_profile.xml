@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="#F4D4D4"
+    android:background="#FFF5F5"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -17,21 +17,22 @@
             android:gravity="center_horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="24dp">
+            android:paddingBottom="32dp">
 
             <TextView
                 android:text="@string/profile"
                 android:textStyle="bold"
-                android:textSize="32sp"
-                android:textColor="#8B4C4C"
+                android:textSize="34sp"
+                android:textColor="#3E2723"
+                android:layout_marginTop="16dp"
                 android:layout_marginBottom="24dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
             <FrameLayout
-                android:layout_width="160dp"
-                android:layout_height="160dp"
-                android:layout_marginBottom="20dp"
+                android:layout_width="180dp"
+                android:layout_height="180dp"
+                android:layout_marginBottom="24dp"
                 android:layout_gravity="center">
 
                 <ImageView
@@ -39,50 +40,74 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_gravity="center"
-                    android:layout_margin="8dp"
+                    android:layout_margin="10dp"
                     android:background="@drawable/circle_background"
                     android:scaleType="centerCrop"
-                    android:src="@drawable/sample_profile" />
+                    android:src="@drawable/sample_profile"
+                    app:cardElevation="8dp"
+                    app:cardCornerRadius="90dp"/>
 
                 <ImageButton
                     android:id="@+id/btnEditPicture"
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
                     android:layout_gravity="bottom|end"
                     android:layout_margin="8dp"
-                    android:background="@drawable/circle_background"
-                    android:padding="12dp"
+                    android:background="@drawable/circle_background_gradient"
+                    android:padding="14dp"
                     android:src="@drawable/ic_camera"
                     android:contentDescription="Edit Profile Picture"
-                    android:importantForAccessibility="yes"/>
+                    android:importantForAccessibility="yes"
+                    android:elevation="4dp"/>
             </FrameLayout>
+
+            <Button
+                android:id="@+id/btnSignOut"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="24dp"
+                android:text="@string/sign_out"
+                android:textColor="@android:color/white"
+                android:backgroundTint="#D32F2F"
+                android:background="@drawable/button_gradient"
+                android:elevation="6dp"
+                app:cornerRadius="12dp"
+                app:strokeColor="#B71C1C"
+                app:strokeWidth="1dp"/>
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginHorizontal="8dp"
                 android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="@android:color/white"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="6dp">
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="6dp"
+                app:strokeColor="#E0E0E0"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="24dp">
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        app:boxBackgroundMode="outline">
+                        app:boxBackgroundMode="outline"
+                        app:boxStrokeColor="#3E2723"
+                        app:hintTextColor="#3E2723">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editName"
                             android:hint="@string/full_name"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="#000000"
+                            android:textColor="#212121"
                             android:textSize="16sp"
                             android:inputType="textPersonName"
                             android:importantForAccessibility="yes"/>
@@ -92,7 +117,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        app:boxBackgroundMode="outline">
+                        app:boxBackgroundMode="outline"
+                        app:boxStrokeColor="#3E2723"
+                        app:hintTextColor="#3E2723">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editEmail"
@@ -100,7 +127,7 @@
                             android:inputType="textEmailAddress"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="#000000"
+                            android:textColor="#212121"
                             android:textSize="16sp"
                             android:importantForAccessibility="yes"/>
                     </com.google.android.material.textfield.TextInputLayout>
@@ -109,7 +136,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        app:boxBackgroundMode="outline">
+                        app:boxBackgroundMode="outline"
+                        app:boxStrokeColor="#3E2723"
+                        app:hintTextColor="#3E2723">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editPhone"
@@ -117,7 +146,7 @@
                             android:layout_height="wrap_content"
                             android:hint="@string/phone"
                             android:inputType="phone"
-                            android:textColor="#000000"
+                            android:textColor="#212121"
                             android:textSize="16sp"
                             android:importantForAccessibility="yes"/>
                     </com.google.android.material.textfield.TextInputLayout>
@@ -126,14 +155,16 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        app:boxBackgroundMode="outline">
+                        app:boxBackgroundMode="outline"
+                        app:boxStrokeColor="#3E2723"
+                        app:hintTextColor="#3E2723">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editLocation"
                             android:hint="Location (City, Country)"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="#000000"
+                            android:textColor="#212121"
                             android:textSize="16sp"
                             android:inputType="text"
                             android:importantForAccessibility="yes"/>
@@ -144,38 +175,43 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginHorizontal="8dp"
                 android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="@android:color/white"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="6dp">
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="6dp"
+                app:strokeColor="#E0E0E0"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="24dp">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Professional Information"
-                        android:textSize="18sp"
+                        android:textSize="20sp"
                         android:textStyle="bold"
-                        android:textColor="#8B4C4C"
+                        android:textColor="#3E2723"
                         android:layout_marginBottom="16dp"/>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        app:boxBackgroundMode="outline">
+                        app:boxBackgroundMode="outline"
+                        app:boxStrokeColor="#3E2723"
+                        app:hintTextColor="#3E2723">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editCompany"
                             android:hint="Company/Organization"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="#000000"
+                            android:textColor="#212121"
                             android:textSize="16sp"
                             android:inputType="text"
                             android:importantForAccessibility="yes"/>
@@ -185,14 +221,16 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        app:boxBackgroundMode="outline">
+                        app:boxBackgroundMode="outline"
+                        app:boxStrokeColor="#3E2723"
+                        app:hintTextColor="#3E2723">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editYearsExperience"
                             android:hint="Years of Experience"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="#000000"
+                            android:textColor="#212121"
                             android:textSize="16sp"
                             android:inputType="number"
                             android:importantForAccessibility="yes"/>
@@ -202,14 +240,16 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        app:boxBackgroundMode="outline">
+                        app:boxBackgroundMode="outline"
+                        app:boxStrokeColor="#3E2723"
+                        app:hintTextColor="#3E2723">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editPriceRange"
                             android:hint="Price Range (e.g., $1000-$5000)"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="#000000"
+                            android:textColor="#212121"
                             android:textSize="16sp"
                             android:inputType="text"
                             android:importantForAccessibility="yes"/>
@@ -221,8 +261,8 @@
                         android:text="Specialties"
                         android:textSize="16sp"
                         android:textStyle="bold"
-                        android:textColor="#8B4C4C"
-                        android:layout_marginBottom="8dp"/>
+                        android:textColor="#3E2723"
+                        android:layout_marginBottom="12dp"/>
 
                     <com.google.android.material.chip.ChipGroup
                         android:id="@+id/specialtiesChipGroup"
@@ -235,19 +275,31 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Wedding Planning"
-                            app:chipBackgroundColor="#F4D4D4"/>
+                            app:chipBackgroundColor="#FFCCBC"
+                            app:chipStrokeColor="#3E2723"
+                            app:chipStrokeWidth="1dp"
+                            app:chipCornerRadius="16dp"
+                            android:textColor="#3E2723"/>
 
                         <com.google.android.material.chip.Chip
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Event Design"
-                            app:chipBackgroundColor="#F4D4D4"/>
+                            app:chipBackgroundColor="#FFCCBC"
+                            app:chipStrokeColor="#3E2723"
+                            app:chipStrokeWidth="1dp"
+                            app:chipCornerRadius="16dp"
+                            android:textColor="#3E2723"/>
 
                         <com.google.android.material.chip.Chip
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Budget Management"
-                            app:chipBackgroundColor="#F4D4D4"/>
+                            app:chipBackgroundColor="#FFCCBC"
+                            app:chipStrokeColor="#3E2723"
+                            app:chipStrokeWidth="1dp"
+                            app:chipCornerRadius="16dp"
+                            android:textColor="#3E2723"/>
                     </com.google.android.material.chip.ChipGroup>
 
                     <Button
@@ -255,38 +307,44 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Add Specialty"
-                        android:textColor="#8B4C4C"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
-                        app:strokeColor="#8B4C4C"/>
+                        android:textColor="@android:color/white"
+
+                        app:strokeColor="#3E2723"
+                        app:cornerRadius="12dp"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginHorizontal="8dp"
                 android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="@android:color/white"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="6dp">
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="6dp"
+                app:strokeColor="#E0E0E0"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="24dp">
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        app:boxBackgroundMode="outline">
+                        app:boxBackgroundMode="outline"
+                        app:boxStrokeColor="#3E2723"
+                        app:hintTextColor="#3E2723">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editBio"
                             android:hint="@string/bio"
                             android:layout_width="match_parent"
                             android:layout_height="150dp"
-                            android:textColor="#000000"
+                            android:textColor="#212121"
                             android:textSize="16sp"
                             android:inputType="textMultiLine"
                             android:gravity="top|start"
@@ -299,8 +357,8 @@
                         android:text="Services Offered"
                         android:textSize="16sp"
                         android:textStyle="bold"
-                        android:textColor="#8B4C4C"
-                        android:layout_marginBottom="8dp"/>
+                        android:textColor="#3E2723"
+                        android:layout_marginBottom="12dp"/>
 
                     <LinearLayout
                         android:id="@+id/servicesContainer"
@@ -315,33 +373,37 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Add Service"
-                        android:textColor="#8B4C4C"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
-                        app:strokeColor="#8B4C4C"/>
+                        android:textColor="@android:color/white"
+
+                        app:strokeColor="#3E2723"
+                        app:cornerRadius="12dp"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginHorizontal="8dp"
                 android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="@android:color/white"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="6dp">
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="6dp"
+                app:strokeColor="#E0E0E0"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="24dp">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Portfolio"
-                        android:textSize="18sp"
+                        android:textSize="20sp"
                         android:textStyle="bold"
-                        android:textColor="#8B4C4C"
+                        android:textColor="#3E2723"
                         android:layout_marginBottom="16dp"/>
 
                     <HorizontalScrollView
@@ -354,16 +416,18 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
-                            android:padding="4dp">
+                            android:padding="8dp">
 
                             <ImageView
-                                android:layout_width="120dp"
-                                android:layout_height="120dp"
+                                android:layout_width="140dp"
+                                android:layout_height="140dp"
                                 android:layout_margin="8dp"
                                 android:src="@drawable/ic_add_image"
                                 android:scaleType="centerCrop"
-                                android:background="#F4D4D4"
-                                android:padding="16dp"/>
+                                android:background="#FFCCBC"
+                                android:padding="16dp"
+                                app:cardCornerRadius="12dp"
+                                app:cardElevation="4dp"/>
                         </LinearLayout>
                     </HorizontalScrollView>
 
@@ -373,33 +437,36 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:text="Add Portfolio Image"
-                        android:textColor="#8B4C4C"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
-                        app:strokeColor="#8B4C4C"/>
+                        android:textColor="@android:color/white"
+
+                        app:cornerRadius="12dp"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginHorizontal="8dp"
                 android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="@android:color/white"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="6dp">
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="6dp"
+                app:strokeColor="#E0E0E0"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="24dp">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Availability"
-                        android:textSize="18sp"
+                        android:textSize="20sp"
                         android:textStyle="bold"
-                        android:textColor="#8B4C4C"
+                        android:textColor="#3E2723"
                         android:layout_marginBottom="16dp"/>
 
                     <com.google.android.material.chip.ChipGroup
@@ -414,24 +481,36 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Available"
-                            app:chipBackgroundColor="#F4D4D4"
-                            app:checkedIconVisible="false"/>
+                            app:chipBackgroundColor="#FFCCBC"
+                            app:chipStrokeColor="#3E2723"
+                            app:chipStrokeWidth="1dp"
+                            app:chipCornerRadius="16dp"
+                            android:textColor="#3E2723"
+                            app:checkedIconVisible="true"/>
 
                         <com.google.android.material.chip.Chip
                             android:id="@+id/chipLimited"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Limited Availability"
-                            app:chipBackgroundColor="#F4D4D4"
-                            app:checkedIconVisible="false"/>
+                            app:chipBackgroundColor="#FFCCBC"
+                            app:chipStrokeColor="#3E2723"
+                            app:chipStrokeWidth="1dp"
+                            app:chipCornerRadius="16dp"
+                            android:textColor="#3E2723"
+                            app:checkedIconVisible="true"/>
 
                         <com.google.android.material.chip.Chip
                             android:id="@+id/chipUnavailable"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Currently Unavailable"
-                            app:chipBackgroundColor="#F4D4D4"
-                            app:checkedIconVisible="false"/>
+                            app:chipBackgroundColor="#FFCCBC"
+                            app:chipStrokeColor="#3E2723"
+                            app:chipStrokeWidth="1dp"
+                            app:chipCornerRadius="16dp"
+                            android:textColor="#3E2723"
+                            app:checkedIconVisible="true"/>
                     </com.google.android.material.chip.ChipGroup>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -439,38 +518,43 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginHorizontal="8dp"
                 android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="@android:color/white"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="6dp">
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="6dp"
+                app:strokeColor="#E0E0E0"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="24dp">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Social Media Links"
-                        android:textSize="18sp"
+                        android:textSize="20sp"
                         android:textStyle="bold"
-                        android:textColor="#8B4C4C"
+                        android:textColor="#3E2723"
                         android:layout_marginBottom="16dp"/>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        app:boxBackgroundMode="outline">
+                        app:boxBackgroundMode="outline"
+                        app:boxStrokeColor="#3E2723"
+                        app:hintTextColor="#3E2723">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editInstagram"
                             android:hint="Instagram"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="#000000"
+                            android:textColor="#212121"
                             android:textSize="16sp"
                             android:inputType="textUri"
                             android:importantForAccessibility="yes"/>
@@ -480,14 +564,16 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        app:boxBackgroundMode="outline">
+                        app:boxBackgroundMode="outline"
+                        app:boxStrokeColor="#3E2723"
+                        app:hintTextColor="#3E2723">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editFacebook"
                             android:hint="Facebook"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="#000000"
+                            android:textColor="#212121"
                             android:textSize="16sp"
                             android:inputType="textUri"
                             android:importantForAccessibility="yes"/>
@@ -496,14 +582,16 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:boxBackgroundMode="outline">
+                        app:boxBackgroundMode="outline"
+                        app:boxStrokeColor="#3E2723"
+                        app:hintTextColor="#3E2723">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editWebsite"
                             android:hint="Website"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="#000000"
+                            android:textColor="#212121"
                             android:textSize="16sp"
                             android:inputType="textUri"
                             android:importantForAccessibility="yes"/>
@@ -517,27 +605,45 @@
                 android:textColor="@android:color/white"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
+                android:layout_marginHorizontal="16dp"
                 android:layout_marginTop="16dp"
+                android:background="@drawable/button_gradient"
                 android:backgroundTint="#4B2323"
                 android:elevation="8dp"
+
+                app:cornerRadius="12dp"
                 android:importantForAccessibility="yes"/>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/reviews"
-                android:textColor="#8B4C4C"
-                android:textSize="20sp"
+                android:textColor="#3E2723"
+                android:textSize="22sp"
                 android:textStyle="bold"
                 android:layout_marginTop="32dp"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="12dp"
                 android:layout_marginStart="8dp"/>
+
+            <Button
+                android:id="@+id/btnAddReview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginBottom="12dp"
+                android:text="Add Review"
+                android:textColor="@android:color/white"
+
+                app:strokeColor="#3E2723"
+                app:cornerRadius="12dp"
+                android:visibility="gone"
+                android:importantForAccessibility="yes"/>
 
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:scrollbars="none"
-                android:paddingVertical="8dp">
+                android:paddingVertical="12dp">
 
                 <LinearLayout
                     android:id="@+id/reviewsContainer"

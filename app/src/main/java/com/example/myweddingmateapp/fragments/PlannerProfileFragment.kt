@@ -13,11 +13,14 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import com.example.myweddingmateapp.LoginActivity
 import com.example.myweddingmateapp.R
+
 import com.example.myweddingmateapp.models.User
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import java.io.ByteArrayOutputStream
@@ -89,6 +92,8 @@ class PlannerProfileFragment : Fragment() {
         specialtiesChipGroup = view.findViewById(R.id.specialtiesChipGroup)
         availabilityChipGroup = view.findViewById(R.id.availabilityChipGroup)
         btnUpdate = view.findViewById(R.id.btnUpdate)
+        view.findViewById<Button>(R.id.btnSignOut).setOnClickListener { signOut() }
+        view.findViewById<Button>(R.id.btnAddReview).visibility = View.GONE
     }
 
     private fun loadUserData() {
@@ -99,14 +104,40 @@ class PlannerProfileFragment : Fragment() {
                 if (currentUser != null) {
                     showUserData(currentUser!!)
                     loadProfileImage()
+                    checkUserRole(document)
                 }
             }
         }
     }
 
+    private fun checkUserRole(document: DocumentSnapshot) {
+        val role = document.getString("role") ?: "Planner"
+        val isUser = role == "User"
+
+        view?.findViewById<Button>(R.id.btnAddReview)?.visibility = if (isUser) View.VISIBLE else View.GONE
+
+        val fields = listOf(
+            editName, editEmail, editPhone, editLocation,
+            editCompany, editYearsExperience, editPriceRange,
+            editBio, editInstagram, editFacebook, editWebsite,
+            btnUpdate, btnEditPicture
+        )
+
+        fields.forEach { it.isEnabled = !isUser }
+
+        for (i in 0 until specialtiesChipGroup.childCount) {
+            val chip = specialtiesChipGroup.getChildAt(i) as? Chip
+            chip?.isCloseIconVisible = !isUser
+            chip?.isClickable = !isUser
+        }
+
+        availabilityChipGroup.isEnabled = !isUser
+        view?.findViewById<Button>(R.id.btnAddSpecialty)?.visibility = if (isUser) View.GONE else View.VISIBLE
+    }
+
     private fun showUserData(user: User) {
-        editName.setText(user.name)
-        editEmail.setText(user.email)
+        editName.setText(user.name ?: "")
+        editEmail.setText(user.email ?: "")
         editPhone.setText(user.phoneNumber ?: "")
         editLocation.setText(user.location ?: "")
         editCompany.setText(user.company ?: "")
@@ -117,18 +148,15 @@ class PlannerProfileFragment : Fragment() {
         editFacebook.setText(user.facebook ?: "")
         editWebsite.setText(user.website ?: "")
 
-        if (user.specialties != null) {
-            for (specialty in user.specialties) {
-                addSpecialtyChip(specialty)
-            }
+        specialtiesChipGroup.removeAllViews()
+        user.specialties?.forEach { specialty ->
+            addSpecialtyChip(specialty)
         }
 
-        if (user.availability == "Available") {
-            availabilityChipGroup.check(R.id.chipAvailable)
-        } else if (user.availability == "Limited Availability") {
-            availabilityChipGroup.check(R.id.chipLimited)
-        } else if (user.availability == "Currently Unavailable") {
-            availabilityChipGroup.check(R.id.chipUnavailable)
+        when (user.availability) {
+            "Available" -> availabilityChipGroup.check(R.id.chipAvailable)
+            "Limited Availability" -> availabilityChipGroup.check(R.id.chipLimited)
+            "Currently Unavailable" -> availabilityChipGroup.check(R.id.chipUnavailable)
         }
     }
 
@@ -157,13 +185,13 @@ class PlannerProfileFragment : Fragment() {
     }
 
     private fun pickImage() {
-        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
-            type = "image/*"
-            addCategory(Intent.CATEGORY_OPENABLE)
-            putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/jpeg", "image/png"))
+        galleryLauncher.launch("image/*")
+    }
 
-        }
-        galleryLauncher.launch(intent.toString())
+    private fun signOut() {
+        auth.signOut()
+        startActivity(Intent(requireContext(), LoginActivity::class.java))
+        requireActivity().finish()
     }
 
     private fun saveProfileImageLocally(bitmap: Bitmap?) {
@@ -221,34 +249,15 @@ class PlannerProfileFragment : Fragment() {
         val user = currentUser ?: User()
         user.name = editName.text.toString().trim()
         user.email = editEmail.text.toString().trim()
-
-        val phone = editPhone.text.toString().trim()
-        if (phone.isNotEmpty()) user.phoneNumber = phone
-
-        val location = editLocation.text.toString().trim()
-        if (location.isNotEmpty()) user.location = location
-
-        val company = editCompany.text.toString().trim()
-        if (company.isNotEmpty()) user.company = company
-
-        val yearsExp = editYearsExperience.text.toString().trim()
-        user.yearsExperience = if (yearsExp.isNotEmpty()) yearsExp.toInt() else null
-
-        val price = editPriceRange.text.toString().trim()
-        if (price.isNotEmpty()) user.priceRange = price
-
-        val bio = editBio.text.toString().trim()
-        if (bio.isNotEmpty()) user.bio = bio
-
-        val instagram = editInstagram.text.toString().trim()
-        if (instagram.isNotEmpty()) user.instagram = instagram
-
-        val facebook = editFacebook.text.toString().trim()
-        if (facebook.isNotEmpty()) user.facebook = facebook
-
-        val website = editWebsite.text.toString().trim()
-        if (website.isNotEmpty()) user.website = website
-
+        user.phoneNumber = editPhone.text.toString().trim().takeIf { it.isNotEmpty() }.toString()
+        user.location = editLocation.text.toString().trim().takeIf { it.isNotEmpty() }.toString()
+        user.company = editCompany.text.toString().trim().takeIf { it.isNotEmpty() }.toString()
+        user.yearsExperience = editYearsExperience.text.toString().trim().toIntOrNull()
+        user.priceRange = editPriceRange.text.toString().trim().takeIf { it.isNotEmpty() }.toString()
+        user.bio = editBio.text.toString().trim().takeIf { it.isNotEmpty() }.toString()
+        user.instagram = editInstagram.text.toString().trim().takeIf { it.isNotEmpty() }.toString()
+        user.facebook = editFacebook.text.toString().trim().takeIf { it.isNotEmpty() }.toString()
+        user.website = editWebsite.text.toString().trim().takeIf { it.isNotEmpty() }.toString()
         user.specialties = specialties
         user.availability = availability
 

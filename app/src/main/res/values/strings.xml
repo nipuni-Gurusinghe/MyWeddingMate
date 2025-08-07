@@ -111,6 +111,7 @@
     <string name="amount_hint">Add budget Amount</string>
     <string name="reminder_date_hint">Add Reminder Date</string>
     <string name="save">Add budget</string>
+    <string name="sign_out">Sign Out</string>
 
 </resources>
 
