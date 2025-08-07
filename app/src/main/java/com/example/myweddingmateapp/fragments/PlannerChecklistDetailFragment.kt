@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myweddingmateapp.adapters.PlannerFavouriteAdapter
@@ -79,7 +80,8 @@ class PlannerChecklistDetailFragment : Fragment() {
                         budget = it.getDouble("budget") ?: 0.0,
                         currency = it.getString("currency") ?: "LKR",
                         isFavorite = it.getBoolean("isFavorite") ?: true,
-                        notes = it.getString("notes") ?: ""
+                        notes = it.getString("notes") ?: "",
+                        reminderDate = it.getDate("reminderDate")?.let { date -> dateFormat.format(date) } ?: "Unknown date"
                     )
                 }
                 adapter.updateItems(favorites)
@@ -107,17 +109,22 @@ class PlannerChecklistDetailFragment : Fragment() {
     }
 
     private fun showBudgetDialog(item: PlannerFavouriteItem) {
-        BudgetDialog.show(requireContext(), item) { updatedBudget: Double, updatedCurrency: String ->
+        BudgetDialog.show(requireContext(), item) { budget, currency, date ->
+            val updates = hashMapOf<String, Any>(
+                "budget" to budget,
+                "currency" to currency
+            )
+
+            date?.let { updates["reminderDate"] = it }
+
             db.collection("userFavorites")
                 .document(item.userId)
                 .collection("items")
                 .document(item.id)
-                .update(mapOf(
-                    "budget" to updatedBudget,
-                    "currency" to updatedCurrency
-                ))
-                .addOnSuccessListener {
-                    loadFavoriteItems(item.userId)
+                .update(updates)
+                .addOnSuccessListener { loadFavoriteItems(item.userId) }
+                .addOnFailureListener { e ->
+                    Toast.makeText(requireContext(), "Update failed: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
         }
     }
