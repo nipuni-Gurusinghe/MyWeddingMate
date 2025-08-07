@@ -152,9 +152,7 @@ class WeddingPlannerAdapter(
 
     override fun getItemCount(): Int = planners.size
 
-    /**
-     * Update the planners list - Simple version
-     */
+
     fun updatePlanners(newPlanners: List<WeddingPlanner>) {
         Log.d(TAG, "updatePlanners called with ${newPlanners.size} planners")
 
@@ -169,14 +167,10 @@ class WeddingPlannerAdapter(
         notifyDataSetChanged()
     }
 
-    /**
-     * Get all planners
-     */
+
     fun getPlanners(): List<WeddingPlanner> = planners.toList()
 
-    /**
-     * Clear all planners
-     */
+
     fun clearPlanners() {
         val size = planners.size
         planners.clear()
