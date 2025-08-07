@@ -30,7 +30,7 @@ class HomeActivity : BaseActivity() {
 
     private val profileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
-            showToast("Profile updated successfully!")
+            showToast("Profile updated successfully ")
             Log.d(TAG, "Profile activity completed successfully")
         }
     }
@@ -38,7 +38,7 @@ class HomeActivity : BaseActivity() {
     private val plannersLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         when (result.resultCode) {
             RESULT_OK -> {
-                showToast("Wedding planner selection completed!")
+                showToast("Wedding planner selection completed ")
                 Log.d(TAG, "Wedding planners activity completed successfully")
             }
             WeddingPlannersActivity.RESULT_PLANNER_SELECTED -> {
@@ -51,7 +51,7 @@ class HomeActivity : BaseActivity() {
 
     private val vendorsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
-            showToast("Vendor selection completed!")
+            showToast("Vendor selection completed")
             Log.d(TAG, "Vendor selection activity completed successfully")
         }
     }

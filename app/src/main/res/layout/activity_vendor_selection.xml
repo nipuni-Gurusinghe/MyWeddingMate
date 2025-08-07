@@ -13,6 +13,8 @@
 
 
 
+
+
     <include
         android:id="@+id/navBar"
         layout="@layout/nav_bar"

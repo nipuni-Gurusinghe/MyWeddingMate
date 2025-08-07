@@ -6,15 +6,18 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-
-    <!--    camera-->
+<!--    camera-->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-permission android:name="android.permission.CAMERA" />
 
     <!-- gallery -->
+
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-    android:maxSdkVersion="28" />
+        android:maxSdkVersion="28" />
+
+
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
     <application
         android:allowBackup="true"
@@ -103,7 +106,10 @@
             
         </activity>
 
-<!--couple profile-->
+
+
+
+
  <activity
             android:name=".CoupleProfileActivity"
             android:exported="true"
@@ -127,13 +133,19 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Profile" />
 
-        <!-- Vendor Selection Activity -->
+        <!-- vendor Selection Activity -->
         <activity
             android:name=".VendorSelectionActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Profile" />
 
+<!--        budget Activity -->
+        <activity
+            android:name=".BudgetOverviewActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Profile" />
 
         <activity
             android:name=".BudgetOverviewActivity"
@@ -161,16 +173,8 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
 
-        <activity
-            android:name=".repository.PlannerProfileBridge"
-            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
-
-
-
-
-
             
-   
+
 
     </application>
 

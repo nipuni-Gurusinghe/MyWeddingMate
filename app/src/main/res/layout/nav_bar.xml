@@ -32,7 +32,7 @@
             android:textSize="12sp" />
     </LinearLayout>
 
-<!--    Chat with selected planner-->
+<!--    Chat with planner ID-->
     <LinearLayout
         android:id="@+id/navChat"
         android:layout_width="0dp"
@@ -50,7 +50,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Chat"
+            android:text="chat"
             android:textColor="#4B0000"
             android:textSize="12sp" />
     </LinearLayout>

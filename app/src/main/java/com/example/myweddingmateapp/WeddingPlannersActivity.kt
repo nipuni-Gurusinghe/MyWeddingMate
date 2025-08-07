@@ -20,7 +20,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import java.util.*
 
-// Select wedding planners from users collection
 class WeddingPlannersActivity : AppCompatActivity() {
 
     companion object {
@@ -31,6 +30,7 @@ class WeddingPlannersActivity : AppCompatActivity() {
         private const val ROLE_WEDDING_PLANNER = "Wedding Planner"
     }
 
+    
     private lateinit var toolbar: MaterialToolbar
     private lateinit var recyclerViewPlanners: RecyclerView
     private lateinit var progressIndicator: CircularProgressIndicator
@@ -53,6 +53,7 @@ class WeddingPlannersActivity : AppCompatActivity() {
         loadWeddingPlanners()
     }
 
+    // Initialize view
     private fun initializeViews() {
         toolbar = findViewById(R.id.toolbar)
         recyclerViewPlanners = findViewById(R.id.recyclerViewPlanners)
@@ -60,6 +61,7 @@ class WeddingPlannersActivity : AppCompatActivity() {
         emptyView = findViewById(R.id.emptyView)
     }
 
+    // Setup toolbar with back navigation
     private fun setupToolbar() {
         setSupportActionBar(toolbar)
         supportActionBar?.apply {
@@ -73,7 +75,7 @@ class WeddingPlannersActivity : AppCompatActivity() {
         }
     }
 
-
+    // Setup RecyclerView with adapter
     private fun setupRecyclerView() {
         plannerAdapter = WeddingPlannerAdapter(
             context = this,
@@ -92,12 +94,13 @@ class WeddingPlannersActivity : AppCompatActivity() {
         }
     }
 
+    // Initialize Firebase Firestore and Auth
     private fun initializeFirebase() {
         firestore = FirebaseFirestore.getInstance()
         auth = FirebaseAuth.getInstance()
     }
 
-    // Load wedding planners from users collection with role "Wedding Planner"
+    // Load wedding planners from Firebase
     private fun loadWeddingPlanners() {
         showLoading(true)
 
@@ -140,32 +143,7 @@ class WeddingPlannersActivity : AppCompatActivity() {
             }
     }
 
-    // Convert user document to WeddingPlanner object
-    private fun convertUserToWeddingPlanner(userId: String, userData: Map<String, Any>): WeddingPlanner {
-        val planner = WeddingPlanner(
-            id = userId,
-            name = userData["name"] as? String ?: "Unknown Planner",
-            email = userData["email"] as? String ?: "",
-            phone = userData["phone"] as? String ?: "",
-            location = userData["location"] as? String ?: "Location not specified",
-            bio = userData["bio"] as? String ?: "Professional wedding planner dedicated to making your special day perfect.",
-            experience = (userData["experience"] as? Long)?.toInt() ?: 0,
-            specialties = userData["specialties"] as? List<String> ?: listOf("Wedding Planning"),
-            priceRange = userData["priceRange"] as? String ?: "Contact for quote",
-            rating = (userData["rating"] as? Double) ?: 4.0,
-            reviewCount = (userData["reviewCount"] as? Long)?.toInt() ?: 0,
-            isAvailable = userData["isAvailable"] as? Boolean ?: true,
-            profileImageUrl = userData["profileImageUrl"] as? String ?: "",
-            portfolioImages = userData["portfolioImages"] as? List<String> ?: emptyList(),
-            services = userData["services"] as? List<String> ?: listOf("Full Wedding Planning"),
-            website = userData["website"] as? String ?: "",
-            socialMedia = userData["socialMedia"] as? Map<String, String> ?: emptyMap()
-        )
-
-        Log.d(TAG, "Converted user to planner: ${planner.name}, Available: ${planner.isAvailable}, Rating: ${planner.rating}")
-        return planner
-    }
-
+    // Update UI based on data state
     private fun updateUI() {
         showLoading(false)
 
@@ -187,56 +165,54 @@ class WeddingPlannersActivity : AppCompatActivity() {
         }
     }
 
+    // Show/hide loading indicator
     private fun showLoading(show: Boolean) {
         progressIndicator.visibility = if (show) View.VISIBLE else View.GONE
         recyclerViewPlanners.visibility = if (show) View.GONE else View.VISIBLE
     }
 
+    // Show/hide empty state
     private fun showEmptyState(show: Boolean) {
         emptyView.visibility = if (show) View.VISIBLE else View.GONE
         recyclerViewPlanners.visibility = if (show) View.GONE else View.VISIBLE
     }
 
-    // Select planner and store in selected_planners collection
+    // Handle planner selection and store in Firestore (ONE planner per user)
     private fun selectPlanner(planner: WeddingPlanner) {
         Log.d(TAG, "Planner selected: ${planner.name} (ID: ${planner.id})")
 
+        // Check if user is authenticated
         val currentUser = auth.currentUser
         if (currentUser == null) {
             showError("Please login to select a planner")
             return
         }
 
-        // Check if planner is available
-        if (!planner.isAvailable) {
-            showError("${planner.name} is currently not available")
-            return
-        }
-
+        // Show loading while saving
         showLoading(true)
 
-        // Check if user has already selected a planner
+        // First, check if user already has a selected planner
         firestore.collection("selected_planners")
             .whereEqualTo("userId", currentUser.uid)
             .get()
             .addOnSuccessListener { documents ->
                 if (!documents.isEmpty) {
-                    // Update existing selection
-                    val existingDoc = documents.documents[0]
+                    // User already has a selection - UPDATE it
+                    val existingDoc = documents.documents[0] // Get the first (should be only) document
                     updateExistingSelection(existingDoc.id, planner)
                 } else {
-                    // Create new selection
+                    // User has no selection - CREATE new one
                     createNewSelection(planner)
                 }
             }
             .addOnFailureListener { exception ->
-                Log.e(TAG, "Error checking existing planner selection", exception)
+                Log.e(TAG, "Error checking existing selection", exception)
                 showLoading(false)
                 showError("Failed to check existing selection. Please try again.")
             }
     }
 
-    // Create new planner selection
+    // Create new selection for user
     private fun createNewSelection(planner: WeddingPlanner) {
         val currentUser = auth.currentUser ?: return
 
@@ -251,10 +227,7 @@ class WeddingPlannersActivity : AppCompatActivity() {
             "plannerPriceRange" to planner.priceRange,
             "selectedAt" to Date(),
             "status" to "selected",
-            "plannerData" to planner,
-            // Additional metadata
-            "createdAt" to Date(),
-            "isActive" to true
+            "plannerData" to planner
         )
 
         firestore.collection("selected_planners")
@@ -270,7 +243,7 @@ class WeddingPlannersActivity : AppCompatActivity() {
             }
     }
 
-    // Update existing planner selection
+    // Update existing selection with new planner
     private fun updateExistingSelection(documentId: String, planner: WeddingPlanner) {
         val updateData = hashMapOf<String, Any>(
             "plannerId" to planner.id,
@@ -281,9 +254,8 @@ class WeddingPlannersActivity : AppCompatActivity() {
             "plannerRating" to planner.rating,
             "plannerPriceRange" to planner.priceRange,
             "updatedAt" to Date(),
-            "status" to "selected",
-            "plannerData" to planner,
-            "isActive" to true
+            "status" to "selected", // Reset to selected if it was confirmed/cancelled
+            "plannerData" to planner
         )
 
         firestore.collection("selected_planners")
@@ -300,21 +272,21 @@ class WeddingPlannersActivity : AppCompatActivity() {
             }
     }
 
-    // Handle successful planner selection
+    // Handle successful selection (common for both create and update)
     private fun handleSelectionSuccess(planner: WeddingPlanner, selectionId: String) {
         showLoading(false)
 
+        // Show success message
         Toast.makeText(
             this,
             "Successfully selected ${planner.name}!",
             Toast.LENGTH_SHORT
         ).show()
 
-        // Return result to calling activity
+        // Create result intent
         val resultIntent = Intent().apply {
             putExtra(EXTRA_SELECTED_PLANNER, planner)
             putExtra("selection_id", selectionId)
-            putExtra("planner_id", planner.id)
         }
 
         setResult(RESULT_PLANNER_SELECTED, resultIntent)
@@ -323,7 +295,7 @@ class WeddingPlannersActivity : AppCompatActivity() {
         overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
     }
 
-    // Check if user already has a selected planner
+    // Check if user already has a selected planner and get details
     private fun getUserSelectedPlanner(callback: (WeddingPlanner?, String?) -> Unit) {
         val currentUser = auth.currentUser
         if (currentUser == null) {
@@ -333,27 +305,12 @@ class WeddingPlannersActivity : AppCompatActivity() {
 
         firestore.collection("selected_planners")
             .whereEqualTo("userId", currentUser.uid)
-            .whereEqualTo("isActive", true)
-            .limit(1)
             .get()
             .addOnSuccessListener { documents ->
                 if (!documents.isEmpty) {
                     val document = documents.documents[0]
-                    val plannerData = document.get("plannerData")
-
-                    // Try to convert back to WeddingPlanner object
-                    val planner = try {
-                        if (plannerData is HashMap<*, *>) {
-                            convertHashMapToWeddingPlanner(plannerData)
-                        } else {
-                            plannerData as? WeddingPlanner
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Error converting planner data", e)
-                        null
-                    }
-
-                    callback(planner, document.id)
+                    val plannerData = document.get("plannerData") as? WeddingPlanner
+                    callback(plannerData, document.id)
                 } else {
                     callback(null, null)
                 }
@@ -364,30 +321,7 @@ class WeddingPlannersActivity : AppCompatActivity() {
             }
     }
 
-    // Convert HashMap back to WeddingPlanner (in case Firestore returns HashMap)
-    private fun convertHashMapToWeddingPlanner(data: HashMap<*, *>): WeddingPlanner {
-        return WeddingPlanner(
-            id = data["id"] as? String ?: "",
-            name = data["name"] as? String ?: "",
-            email = data["email"] as? String ?: "",
-            phone = data["phone"] as? String ?: "",
-            location = data["location"] as? String ?: "",
-            bio = data["bio"] as? String ?: "",
-            experience = (data["experience"] as? Long)?.toInt() ?: 0,
-            specialties = data["specialties"] as? List<String> ?: emptyList(),
-            priceRange = data["priceRange"] as? String ?: "",
-            rating = data["rating"] as? Double ?: 0.0,
-            reviewCount = (data["reviewCount"] as? Long)?.toInt() ?: 0,
-            isAvailable = data["isAvailable"] as? Boolean ?: true,
-            profileImageUrl = data["profileImageUrl"] as? String ?: "",
-            portfolioImages = data["portfolioImages"] as? List<String> ?: emptyList(),
-            services = data["services"] as? List<String> ?: emptyList(),
-            website = data["website"] as? String ?: "",
-            socialMedia = data["socialMedia"] as? Map<String, String> ?: emptyMap()
-        )
-    }
-
-    // View planner profile in detail
+    // View  profile
     private fun viewPlannerProfile(planner: WeddingPlanner) {
         Log.d(TAG, "Viewing profile for: ${planner.name} (ID: ${planner.id})")
 
@@ -408,27 +342,30 @@ class WeddingPlannersActivity : AppCompatActivity() {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
+    // back btn
     override fun onBackPressed() {
         super.onBackPressed()
         overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
     }
 
-    // Utility methods for filtering and sorting
     private fun refreshPlanners() {
         loadWeddingPlanners()
     }
 
-//    private fun filterAvailablePlanners() {
-//        plannerAdapter.filterByAvailability(true)
-//    }
-//
-//    private fun sortPlannersByRating() {
-//        plannerAdapter.sortByRating()
-//    }
-//
-//    private fun sortPlannersByExperience() {
-//        plannerAdapter.sortByExperience()
-//    }
+
+    private fun filterAvailablePlanners() {
+        plannerAdapter.filterByAvailability(true)
+    }
+
+
+    private fun sortPlannersByRating() {
+        plannerAdapter.sortByRating()
+    }
+
+
+    private fun sortPlannersByExperience() {
+        plannerAdapter.sortByExperience()
+    }
 
     override fun onDestroy() {
         super.onDestroy()

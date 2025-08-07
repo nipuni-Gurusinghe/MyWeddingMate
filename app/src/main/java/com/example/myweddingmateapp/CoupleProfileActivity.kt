@@ -2,7 +2,6 @@ package com.example.myweddingmateapp
 
 import android.Manifest
 import android.app.Activity
-import android.app.DatePickerDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -34,7 +33,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.io.IOException
-import java.text.SimpleDateFormat
 import java.util.*
 import java.util.regex.Pattern
 
@@ -66,11 +64,7 @@ class CoupleProfileActivity : BaseActivity() {
     private var coupleProfileData: CoupleProfile? = null
     private var selectedWeddingDate: Calendar = Calendar.getInstance()
 
-
-    private val displayDateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-    private val storeDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-
-
+    // Activity Result Launchers
     private lateinit var takePictureLauncher: ActivityResultLauncher<Intent>
     private lateinit var galleryLauncher: ActivityResultLauncher<Intent>
 
@@ -82,6 +76,7 @@ class CoupleProfileActivity : BaseActivity() {
         private const val STORAGE_PERMISSION_REQUEST_CODE = 101
     }
 
+    // BaseActivity call
     override fun getCurrentNavId(): Int = R.id.navProfile
 
     override fun getLayoutResourceId(): Int = R.layout.activity_couple_profile
@@ -96,7 +91,7 @@ class CoupleProfileActivity : BaseActivity() {
         setupTextWatchers()
         setupClickListeners()
 
-
+        // Load data only if user is already authenticated
         if (auth.currentUser != null) {
             loadSavedData()
         }
@@ -142,7 +137,7 @@ class CoupleProfileActivity : BaseActivity() {
     }
 
     private fun initializeActivityLaunchers() {
-        // Camera
+        // Camera launcher
         takePictureLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
@@ -160,7 +155,7 @@ class CoupleProfileActivity : BaseActivity() {
             }
         }
 
-        // gallery
+        // Gallery launcher
         galleryLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
@@ -270,7 +265,7 @@ class CoupleProfileActivity : BaseActivity() {
     private fun checkCameraPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
             == PackageManager.PERMISSION_GRANTED) {
-            // Permission start camera intent
+            // Permission is granted, start camera intent
             dispatchTakePictureIntent()
         } else {
             // Request the camera permission
@@ -305,10 +300,10 @@ class CoupleProfileActivity : BaseActivity() {
         when (requestCode) {
             CAMERA_PERMISSION_REQUEST_CODE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
+                    // Permission granted, launch the camera
                     dispatchTakePictureIntent()
                 } else {
-
+                    // Permission denied, show a message to the user
                     Toast.makeText(this, "Camera permission is required to take photos", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -325,7 +320,7 @@ class CoupleProfileActivity : BaseActivity() {
     private fun dispatchTakePictureIntent() {
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         if (takePictureIntent.resolveActivity(packageManager) != null) {
-
+            // Ensure there's a camera activity to handle the intent
             takePictureLauncher.launch(takePictureIntent)
         } else {
             showToast("No camera app available")
@@ -390,7 +385,6 @@ class CoupleProfileActivity : BaseActivity() {
             "email" to profile.email,
             "phone" to profile.phone,
             "address" to profile.address,
-            "weddingDate" to profile.weddingDate,
             "createdAt" to profile.createdAt,
             "updatedAt" to profile.updatedAt,
             "userId" to currentUser.uid,
@@ -487,7 +481,6 @@ class CoupleProfileActivity : BaseActivity() {
             email = etEmail.text.toString().trim(),
             phone = etPhone.text.toString().trim(),
             address = etAddress.text.toString().trim(),
-            weddingDate = weddingDateString,
             profilePhotoPath = "", // No longer using file paths
             createdAt = coupleProfileData?.createdAt ?: System.currentTimeMillis(),
             updatedAt = System.currentTimeMillis()
@@ -540,8 +533,7 @@ class CoupleProfileActivity : BaseActivity() {
                     email = data["email"] as? String ?: "",
                     phone = data["phone"] as? String ?: "",
                     address = data["address"] as? String ?: "",
-                    weddingDate = data["weddingDate"] as? String ?: "",
-                    profilePhotoPath = "",
+                    profilePhotoPath = "", // No longer using file paths
                     createdAt = data["createdAt"] as? Long ?: 0L,
                     updatedAt = data["updatedAt"] as? Long ?: 0L
                 )
@@ -562,25 +554,8 @@ class CoupleProfileActivity : BaseActivity() {
             etPhone.setText(profile.phone)
             etAddress.setText(profile.address)
 
-            // Handle wedding date
-            if (profile.weddingDate.isNotEmpty()) {
-                try {
-                    // get  stored date
-                    val storedDate = storeDateFormat.parse(profile.weddingDate)
-                    if (storedDate != null) {
-                        selectedWeddingDate.time = storedDate
-                        // Display format
-                        val displayDate = displayDateFormat.format(storedDate)
-                        etWeddingDate.setText(displayDate)
-                    }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error parsing wedding date: ${profile.weddingDate}", e)
-
-                    etWeddingDate.setText("")
-                }
-            }
-
-
+            // Note: Profile photo is not persisted, so it will show default image
+            // If you want to persist photos, consider using Firebase Storage
         }
     }
 

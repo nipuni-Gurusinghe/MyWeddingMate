@@ -18,6 +18,8 @@ class CoupleDashboardActivity : BaseActivity() {
 
     private fun handleInitialNavigation() {
 
+
+         // goes to HomeActivity
         val intent = Intent(this, HomeActivity::class.java)
         startActivity(intent)
         finish()

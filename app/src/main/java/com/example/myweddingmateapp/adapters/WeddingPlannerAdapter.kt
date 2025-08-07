@@ -22,11 +22,7 @@ class WeddingPlannerAdapter(
         private const val TAG = "WeddingPlannerAdapter"
     }
 
-    private var planners: MutableList<WeddingPlanner> = mutableListOf()
-
-    /**
-     * ViewHolder for planner items
-     */
+//    viewholder
     inner class PlannerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val profileImage: ImageView = itemView.findViewById(R.id.imgPlannerProfile)
         val plannerName: TextView = itemView.findViewById(R.id.tvPlannerName)
@@ -42,69 +38,49 @@ class WeddingPlannerAdapter(
         val cardContainer: androidx.cardview.widget.CardView = itemView.findViewById(R.id.cardPlannerContainer)
 
         fun bind(planner: WeddingPlanner) {
-            Log.d(TAG, "Binding planner: ${planner.name}")
-
-            // Set planner name
             plannerName.text = planner.name
 
-            // Set rating and reviews
-            val ratingText = if (planner.reviewCount > 0) {
-                "★ ${planner.rating} (${planner.reviewCount} reviews)"
-            } else {
-                "★ ${planner.rating} (No reviews yet)"
-            }
-            plannerRating.text = ratingText
 
-            // Set location
-            plannerLocation.text = if (planner.location.isNotEmpty()) {
-                "📍 ${planner.location}"
-            } else {
-                "📍 Location not specified"
-            }
+            plannerRating.text = "${planner.getRatingText()} ${planner.getReviewText()}"
 
-            // Set experience
-            plannerExperience.text = if (planner.experience > 0) {
-                "${planner.experience} years experience"
-            } else {
-                "New to the field"
-            }
 
-//            // Set specialties
-//            plannerSpecialties.text = if (planner.specialties.isNotEmpty()) {
-//                planner.specialties.joinToString(", ")
-//            } else {
-//                "Wedding Planning"
-//            }
+            plannerLocation.text = planner.location.ifEmpty { "Location not specified" }
 
-            // Set price range
+
+            plannerExperience.text = planner.getExperienceText()
+
+
+            plannerSpecialties.text = planner.getSpecialtiesText()
+
+
             plannerPriceRange.text = if (planner.priceRange.isNotEmpty()) {
                 planner.priceRange
             } else {
                 "Contact for quote"
             }
 
-//            // Set bio (truncated)
-//            plannerBio.text = if (planner.bio.isNotEmpty()) {
-//                if (planner.bio.length > 120) {
-//                    "${planner.bio.substring(0, 120)}..."
-//                } else {
-//                    planner.bio
-//                }
-//            } else {
-//                "Professional wedding planner dedicated to making your special day perfect."
-//            }
 
-            // Set availability badge
-            availabilityBadge.text = if (planner.isAvailable) "Available" else "Unavailable"
+            plannerBio.text = if (planner.bio.isNotEmpty()) {
+                if (planner.bio.length > 120) {
+                    "${planner.bio.substring(0, 120)}..."
+                } else {
+                    planner.bio
+                }
+            } else {
+                "Professional wedding planner dedicated to making your special day perfect."
+            }
+
+
+            availabilityBadge.text = planner.getAvailabilityText()
             availabilityBadge.setBackgroundResource(
                 if (planner.isAvailable) R.drawable.bg_available_badge
                 else R.drawable.bg_unavailable_badge
             )
 
-            // Load profile image
+
             loadProfileImage(planner.profileImageUrl)
 
-            // Set click listeners
+
             btnSelectPlanner.setOnClickListener {
                 Log.d(TAG, "Select button clicked for: ${planner.name}")
                 onPlannerClick(planner)
@@ -120,7 +96,6 @@ class WeddingPlannerAdapter(
                 onViewProfileClick(planner)
             }
 
-            // Enable/disable select button based on availability
             btnSelectPlanner.isEnabled = planner.isAvailable
             btnSelectPlanner.alpha = if (planner.isAvailable) 1.0f else 0.6f
         }
@@ -134,7 +109,7 @@ class WeddingPlannerAdapter(
                     .error(R.drawable.ic_person)
                     .into(profileImage)
             } else {
-                // Set default profile image
+
                 profileImage.setImageResource(R.drawable.ic_person)
             }
         }
@@ -152,7 +127,7 @@ class WeddingPlannerAdapter(
 
     override fun getItemCount(): Int = planners.size
 
-
+//    update list
     fun updatePlanners(newPlanners: List<WeddingPlanner>) {
         Log.d(TAG, "updatePlanners called with ${newPlanners.size} planners")
 
@@ -168,12 +143,68 @@ class WeddingPlannerAdapter(
     }
 
 
-    fun getPlanners(): List<WeddingPlanner> = planners.toList()
+     //Add 1 planner
+
+    fun addPlanner(planner: WeddingPlanner) {
+        planners.add(planner)
+        notifyItemInserted(planners.size - 1)
+    }
+
+
+     //remove  planner
+
+    fun removePlanner(plannerId: String) {
+        val position = planners.indexOfFirst { it.id == plannerId }
+        if (position != -1) {
+            planners.removeAt(position)
+            notifyItemRemoved(position)
+        }
+    }
+
+
+     //update planner
+
+    fun updatePlanner(updatedPlanner: WeddingPlanner) {
+        val position = planners.indexOfFirst { it.id == updatedPlanner.id }
+        if (position != -1) {
+            planners[position] = updatedPlanner
+            notifyItemChanged(position)
+        }
+    }
+
+
+     //Get planner at position
+
+    fun getPlannerAt(position: Int): WeddingPlanner? {
+        return if (position in 0 until planners.size) planners[position] else null
+    }
 
 
     fun clearPlanners() {
         val size = planners.size
         planners.clear()
         notifyItemRangeRemoved(0, size)
+    }
+
+
+    fun filterByAvailability(availableOnly: Boolean) {
+        val filteredPlanners = if (availableOnly) {
+            planners.filter { it.isAvailable }
+        } else {
+            planners
+        }
+        updatePlanners(filteredPlanners)
+    }
+
+
+    fun sortByRating() {
+        planners.sortByDescending { it.rating }
+        notifyDataSetChanged()
+    }
+
+
+    fun sortByExperience() {
+        planners.sortByDescending { it.experience }
+        notifyDataSetChanged()
     }
 }
