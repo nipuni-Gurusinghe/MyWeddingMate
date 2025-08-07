@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-<!--item_wedding_planner.xml-->
+
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -135,27 +135,6 @@
 
                 </LinearLayout>
 
-<!--                &lt;!&ndash; Specialties &ndash;&gt;-->
-<!--                <TextView-->
-<!--                    android:id="@+id/tvPlannerSpecialties"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_marginBottom="8dp"-->
-<!--                    android:text=""-->
-<!--                    android:textColor="@color/accent"-->
-<!--                    android:textSize="13sp"-->
-<!--                    android:textStyle="italic" />-->
-
-<!--                &lt;!&ndash; Bio &ndash;&gt;-->
-<!--                <TextView-->
-<!--                    android:id="@+id/tvPlannerBio"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_marginBottom="16dp"-->
-<!--                    android:lineSpacingExtra="2dp"-->
-<!--                    android:text=""-->
-<!--                    android:textColor="@color/text_primary"-->
-<!--                    android:textSize="14sp" />-->
 
                 <!-- Action Buttons -->
                 <LinearLayout

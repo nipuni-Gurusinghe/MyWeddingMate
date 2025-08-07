@@ -9,7 +9,7 @@
     android:paddingTop="6dp"
     android:paddingBottom="6dp"
     android:elevation="8dp">
-
+<!--nav_bar.xml-->
     <LinearLayout
         android:id="@+id/navHome"
         android:layout_width="0dp"
