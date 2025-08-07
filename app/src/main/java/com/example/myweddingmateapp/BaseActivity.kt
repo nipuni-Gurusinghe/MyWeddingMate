@@ -3,136 +3,24 @@ package com.example.myweddingmateapp
 import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 abstract class BaseActivity : AppCompatActivity() {
-    private var navBar: LinearLayout? = null
+    private var navBar: LinearLayout? = null // Make nullable instead of lateinit
 
     protected abstract fun getCurrentNavId(): Int
     protected abstract fun getLayoutResourceId(): Int
-
-
     protected open fun hasNavBar(): Boolean = true
-
-
-    protected open fun needsProgrammaticNavbar(): Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(getLayoutResourceId())
 
         if (hasNavBar()) {
-            if (needsProgrammaticNavbar()) {
-
-                addNavbarProgrammatically()
-            }
-
-
             setupNavbarAfterLayout()
-        }
-    }
-
-    private fun addNavbarProgrammatically() {
-        try {
-            android.util.Log.d("BaseActivity", "Adding navbar programmatically...")
-
-
-            val contentView = findViewById<ViewGroup>(android.R.id.content)
-            val rootLayout = findRelativeLayoutInHierarchy(contentView)
-
-            if (rootLayout == null) {
-                android.util.Log.e("BaseActivity", "Could not find RelativeLayout for programmatic navbar")
-                return
-            }
-
-            android.util.Log.d("BaseActivity", "Found RelativeLayout: ${rootLayout.javaClass.simpleName}")
-
-            // Check if navbar  exists
-            if (rootLayout.findViewById<View>(R.id.navBar) != null) {
-                android.util.Log.d("BaseActivity", "Navbar already exists, skipping")
-                return
-            }
-
-            // Inflate navbar
-            val navbarView = LayoutInflater.from(this)
-                .inflate(R.layout.nav_bar, rootLayout, false)
-
-            // Set layout parameters at bottom
-            val params = RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.MATCH_PARENT,
-                RelativeLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
-            }
-
-            // Add navbar to layout
-            rootLayout.addView(navbarView, params)
-
-            // Adjust existing views to accommodate navbar
-            adjustLayoutForProgrammaticNavbar(rootLayout)
-
-            android.util.Log.d("BaseActivity", "Programmatic navbar added successfully")
-
-        } catch (e: Exception) {
-            android.util.Log.e("BaseActivity", "Error adding programmatic navbar: ${e.message}", e)
-        }
-    }
-
-    private fun findRelativeLayoutInHierarchy(parent: ViewGroup): RelativeLayout? {
-        for (i in 0 until parent.childCount) {
-            val child = parent.getChildAt(i)
-
-            if (child is RelativeLayout) {
-                android.util.Log.d("BaseActivity", "Found RelativeLayout at position $i")
-                return child
-            } else if (child is ViewGroup) {
-                val found = findRelativeLayoutInHierarchy(child)
-                if (found != null) return found
-            }
-        }
-        return null
-    }
-
-    private fun adjustLayoutForProgrammaticNavbar(rootLayout: RelativeLayout) {
-        try {
-            // Adjust RecyclerView if it exists
-            rootLayout.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recyclerChats)?.let {
-                val params = it.layoutParams as RelativeLayout.LayoutParams
-                params.addRule(RelativeLayout.ABOVE, R.id.navBar)
-                it.layoutParams = params
-                android.util.Log.d("BaseActivity", "RecyclerView adjusted for navbar")
-            }
-
-            // Adjust FAB if it exists
-            rootLayout.findViewById<FloatingActionButton>(R.id.fabNewChat)?.let {
-                val params = it.layoutParams as RelativeLayout.LayoutParams
-                params.removeRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
-                params.addRule(RelativeLayout.ABOVE, R.id.navBar)
-                params.bottomMargin = 24
-                params.addRule(RelativeLayout.ALIGN_PARENT_END)
-                params.marginEnd = 24
-                it.layoutParams = params
-                android.util.Log.d("BaseActivity", "FAB adjusted for navbar")
-            }
-
-            // Adjust empty state if it exists
-            rootLayout.findViewById<LinearLayout>(R.id.emptyState)?.let {
-                val params = it.layoutParams as RelativeLayout.LayoutParams
-                params.addRule(RelativeLayout.ABOVE, R.id.navBar)
-                it.layoutParams = params
-                android.util.Log.d("BaseActivity", "Empty state adjusted for navbar")
-            }
-
-        } catch (e: Exception) {
-            android.util.Log.e("BaseActivity", "Error adjusting layout for navbar: ${e.message}", e)
         }
     }
 

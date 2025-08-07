@@ -197,7 +197,7 @@ class WeddingPlannersActivity : AppCompatActivity() {
         recyclerViewPlanners.visibility = if (show) View.GONE else View.VISIBLE
     }
 
-    // Select planner and store in selected_planners collection
+    // Select planner and store in user's document
     private fun selectPlanner(planner: WeddingPlanner) {
         Log.d(TAG, "Planner selected: ${planner.name} (ID: ${planner.id})")
 
@@ -215,24 +215,90 @@ class WeddingPlannersActivity : AppCompatActivity() {
 
         showLoading(true)
 
-        // Check if user has already selected a planner
-        firestore.collection("selected_planners")
-            .whereEqualTo("userId", currentUser.uid)
+        // Update the user's document with the selected planner ID
+        val userDocRef = firestore.collection("users").document(currentUser.uid)
+
+        val updateData = hashMapOf<String, Any>(
+            "selectedPlannerId" to planner.id,
+            "selectedPlannerName" to planner.name,
+            "selectedPlannerEmail" to planner.email,
+            "selectedPlannerUpdatedAt" to Date()
+        )
+
+        userDocRef.update(updateData)
+            .addOnSuccessListener {
+                Log.d(TAG, "Successfully updated user with selected planner: ${planner.id}")
+                handleSelectionSuccess(planner)
+            }
+            .addOnFailureListener { exception ->
+                Log.e(TAG, "Error updating user with selected planner", exception)
+                showLoading(false)
+                showError("Failed to select planner. Please try again.")
+            }
+    }
+
+    // Handle successful planner selection (simplified version)
+    private fun handleSelectionSuccess(planner: WeddingPlanner) {
+        showLoading(false)
+
+        Toast.makeText(
+            this,
+            "Successfully selected ${planner.name}!",
+            Toast.LENGTH_SHORT
+        ).show()
+
+        // Return result to calling activity
+        val resultIntent = Intent().apply {
+            putExtra(EXTRA_SELECTED_PLANNER, planner)
+            putExtra("planner_id", planner.id)
+        }
+
+        setResult(RESULT_PLANNER_SELECTED, resultIntent)
+        finish()
+
+        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
+    }
+
+    // Check if user already has a selected planner (updated version)
+    private fun getUserSelectedPlanner(callback: (WeddingPlanner?) -> Unit) {
+        val currentUser = auth.currentUser
+        if (currentUser == null) {
+            callback(null)
+            return
+        }
+
+        firestore.collection("users").document(currentUser.uid)
             .get()
-            .addOnSuccessListener { documents ->
-                if (!documents.isEmpty) {
-                    // Update existing selection
-                    val existingDoc = documents.documents[0]
-                    updateExistingSelection(existingDoc.id, planner)
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val selectedPlannerId = document.getString("selectedPlannerId")
+                    if (!selectedPlannerId.isNullOrEmpty()) {
+                        // Load the planner details from users collection
+                        firestore.collection("users").document(selectedPlannerId)
+                            .get()
+                            .addOnSuccessListener { plannerDoc ->
+                                try {
+                                    val planner = convertUserToWeddingPlanner(plannerDoc.id, plannerDoc.data!!)
+                                    callback(planner)
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Error converting planner data", e)
+                                    callback(null)
+                                }
+                            }
+                            .addOnFailureListener { exception ->
+                                Log.e(TAG, "Error loading selected planner details", exception)
+                                callback(null)
+                            }
+                    } else {
+                        callback(null)
+                    }
                 } else {
-                    // Create new selection
-                    createNewSelection(planner)
+                    callback(null)
                 }
             }
             .addOnFailureListener { exception ->
-                Log.e(TAG, "Error checking existing planner selection", exception)
-                showLoading(false)
-                showError("Failed to check existing selection. Please try again.")
+                Log.e(TAG, "Error checking user's selected planner", exception)
+                callback(null)
             }
     }
 
