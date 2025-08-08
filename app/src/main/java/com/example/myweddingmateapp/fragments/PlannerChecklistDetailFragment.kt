@@ -22,6 +22,7 @@ class PlannerChecklistDetailFragment : Fragment() {
     private val db = FirebaseFirestore.getInstance()
     private val dateFormat = SimpleDateFormat("MMMM d, yyyy", Locale.getDefault())
     private lateinit var adapter: PlannerFavouriteAdapter
+    private var weddingDate: Date? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -58,10 +59,25 @@ class PlannerChecklistDetailFragment : Fragment() {
                     binding.toolbar.title = "${it.name}'s Favorites"
                 }
             }
+
+        loadWeddingDate(userId)
         loadFavoriteItems(userId)
+
         binding.toolbar.setNavigationOnClickListener {
             parentFragmentManager.popBackStack()
         }
+    }
+
+    private fun loadWeddingDate(userId: String) {
+        db.collection("couple_profiles").document(userId).get()
+            .addOnSuccessListener { document ->
+                val dateString = document.getString("weddingDate")
+                weddingDate = try {
+                    SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(dateString)
+                } catch (e: Exception) {
+                    null
+                }
+            }
     }
 
     private fun loadFavoriteItems(userId: String) {
@@ -81,7 +97,8 @@ class PlannerChecklistDetailFragment : Fragment() {
                         currency = it.getString("currency") ?: "LKR",
                         isFavorite = it.getBoolean("isFavorite") ?: true,
                         notes = it.getString("notes") ?: "",
-                        reminderDate = it.getDate("reminderDate")?.let { date -> dateFormat.format(date) } ?: "Unknown date"
+                        reminderDate = it.getDate("reminderDate")?.let { date -> dateFormat.format(date) } ?: "",
+                        isCompleted = (it.getDouble("budget") ?: 0.0) > 0
                     )
                 }
                 adapter.updateItems(favorites)
@@ -90,6 +107,7 @@ class PlannerChecklistDetailFragment : Fragment() {
             }
             .addOnFailureListener {
                 binding.progressBar.visibility = View.GONE
+                Toast.makeText(requireContext(), "Failed to load items", Toast.LENGTH_SHORT).show()
             }
     }
 
@@ -109,7 +127,11 @@ class PlannerChecklistDetailFragment : Fragment() {
     }
 
     private fun showBudgetDialog(item: PlannerFavouriteItem) {
-        BudgetDialog.show(requireContext(), item) { budget, currency, date ->
+        BudgetDialog.show(
+            requireContext(),
+            item,
+            weddingDate
+        ) { budget, currency, date ->
             val updates = hashMapOf<String, Any>(
                 "budget" to budget,
                 "currency" to currency
@@ -130,9 +152,13 @@ class PlannerChecklistDetailFragment : Fragment() {
     }
 
     private fun updateCounts(favorites: List<PlannerFavouriteItem>) {
-        binding.textTotalCount.text = favorites.size.toString()
-        binding.textCompletedCount.text = favorites.count { it.isFavorite }.toString()
-        binding.textTotalBudget.text = "LKR ${favorites.sumOf { it.budget }}"
+        val totalCount = favorites.size
+        val completedCount = favorites.count { it.budget > 0 }
+        val totalBudget = favorites.sumOf { it.budget }
+
+        binding.textTotalCount.text = totalCount.toString()
+        binding.textCompletedCount.text = "$completedCount/$totalCount"
+        binding.textTotalBudget.text = "LKR ${String.format("%.2f", totalBudget)}"
     }
 
     override fun onDestroyView() {

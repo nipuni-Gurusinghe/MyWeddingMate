@@ -37,7 +37,7 @@
     <string name="email_hint" translatable="false">Email Address</string>
     <string name="phone_hint" translatable="false">Phone Number</string>
     <string name="address_hint" translatable="false">Address</string>
-    <string name="cancel">cancle\n</string>
+    <string name="cancel">cancel\n</string>
     <string name="save_profile">Save_profile</string>
     <string name="required_fields">required_fields</string>
     <string name="address_label">address_label</string>
@@ -118,6 +118,12 @@
     <string name="service_price">Add Service Price</string>
     <string name="service_description">Decribe your service</string>
     <string name="service_name">Add Service Name</string>
-
+    <string-array name="currencies_array">
+        <item>USD</item>
+        <item>EUR</item>
+        <item>LKR</item>
+        <item>GBP</item>
+        <item>JPY</item>
+    </string-array>
 </resources>
 

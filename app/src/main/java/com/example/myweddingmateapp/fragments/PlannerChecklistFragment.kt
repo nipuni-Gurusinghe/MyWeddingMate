@@ -10,13 +10,14 @@ import com.example.myweddingmateapp.R
 import com.example.myweddingmateapp.adapters.UserListAdapter
 import com.example.myweddingmateapp.databinding.FragmentPlannerChecklistBinding
 import com.example.myweddingmateapp.models.User
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 class PlannerChecklistFragment : Fragment() {
     private var _binding: FragmentPlannerChecklistBinding? = null
     private val binding get() = _binding!!
     private val db = FirebaseFirestore.getInstance()
-
+    private val auth = FirebaseAuth.getInstance()
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -36,6 +37,7 @@ class PlannerChecklistFragment : Fragment() {
 
         db.collection("users")
             .whereEqualTo("role", "User")
+            .whereEqualTo("selectedPlannerId", auth.currentUser?.uid)
             .get()
             .addOnSuccessListener { documents ->
                 val users = documents.mapNotNull {
