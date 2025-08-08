@@ -453,14 +453,17 @@ class WeddingPlannersActivity : AppCompatActivity() {
         )
     }
 
-    // View planner profile in detail
+    // View planner profile in detail .............
     private fun viewPlannerProfile(planner: WeddingPlanner) {
         Log.d(TAG, "Viewing profile for: ${planner.name} (ID: ${planner.id})")
 
         try {
-            val intent = Intent(this, PlannerProfileBridge::class.java).apply {
+            // Start PlannerProfileHostActivity to load PlannerProfileFragment
+            val intent = Intent(this, PlannerProfileHostActivity::class.java).apply {
                 putExtra(EXTRA_PLANNER_FOR_PROFILE, planner)
-                putExtra("planner_user_id", planner.id) // Pass the user ID
+                putExtra("planner_user_id", planner.id)
+                putExtra("planner_name", planner.name)
+                putExtra("planner_email", planner.email)
             }
             startActivity(intent)
             overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
