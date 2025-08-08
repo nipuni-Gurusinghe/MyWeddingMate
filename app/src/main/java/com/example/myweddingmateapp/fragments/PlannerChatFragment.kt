@@ -3,6 +3,7 @@ package com.example.myweddingmateapp.fragments
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,6 +18,7 @@ import com.example.myweddingmateapp.models.ChatMessage
 import com.example.myweddingmateapp.models.User
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
@@ -58,6 +60,7 @@ class PlannerChatFragment : Fragment() {
             db.collection("users").document(uid).get()
                 .addOnSuccessListener { document ->
                     currentUser = document.toObject(User::class.java)
+                    Log.e("CurrentUser", currentUser.toString())
                     currentUser?.let { setupChatList(it) }
                 }
         }
@@ -66,63 +69,82 @@ class PlannerChatFragment : Fragment() {
     private fun setupChatList(user: User) {
         listBinding.recyclerChats.layoutManager = LinearLayoutManager(requireContext())
 
-        usersListener = db.collection("users")
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) return@addSnapshotListener
-
-                val users = snapshot?.documents?.mapNotNull {
-                    it.toObject(User::class.java)?.copy(uid = it.id)
-                } ?: emptyList()
-
-                val adapter = PlannerChatListAdapter(
-                    users,
-                    user.role,
-                    user.uid
-                ) { selectedUser ->
-                    parentFragmentManager.beginTransaction()
-                        .replace(R.id.fragmentContainer, PlannerChatFragment().apply {
-                            arguments = Bundle().apply {
-                                putBoolean("isChatOpen", true)
-                                putString("recipientId", selectedUser.uid)
-                            }
-                        })
-                        .addToBackStack(null)
-                        .commit()
+        val query = if (user.role == "Wedding Planner") {
+            db.collection("users")
+                .whereEqualTo("role", "User")
+                .whereEqualTo("selectedPlannerId", user.uid)
+        } else {
+            if (user.selectedPlannerId != null && user.selectedPlannerId!!.isNotEmpty()) {
+                user.selectedPlannerId?.let { plannerId ->
+                    db.collection("users")
+                        .whereEqualTo("role", "Wedding Planner")
+                        .whereEqualTo(FieldPath.documentId(), plannerId)
                 }
+            } else {
+                db.collection("users").whereEqualTo("role", "NO_RESULTS")
+            }
+        }
 
-                listBinding.recyclerChats.adapter = adapter
-
-                users.forEach { recipient ->
-                    val chatId = if (user.uid < recipient.uid) {
-                        "${user.uid}-${recipient.uid}"
-                    } else {
-                        "${recipient.uid}-${user.uid}"
-                    }
-
-                    db.collection("chats").document(chatId)
-                        .collection("messages")
-                        .orderBy("timestamp", Query.Direction.DESCENDING)
-                        .limit(1)
-                        .addSnapshotListener { messageSnapshot, messageError ->
-                            if (messageError != null) return@addSnapshotListener
-
-                            messageSnapshot?.documents?.firstOrNull()?.let { doc ->
-                                val data = doc.data
-                                val lastMessage = data?.get("message") as? String ?: ""
-                                val timestamp = data?.get("timestamp") as? Long ?: 0L
-                                val recipientId = data?.get("recipientId") as? String ?: ""
-                                adapter.updateLastMessage(
-                                    recipient.uid,
-                                    lastMessage,
-                                    formatTimestamp(timestamp),
-                                    recipientId
-                                )
-                            }
-                        }
-                }
+        usersListener = query?.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                Log.e("ChatList", "Error fetching users", error)
+                return@addSnapshotListener
             }
 
+            val users = snapshot?.documents?.mapNotNull {
+                it.toObject(User::class.java)?.copy(uid = it.id)
+            } ?: emptyList()
 
+            val adapter = PlannerChatListAdapter(
+                users,
+                user.role,
+                user.uid
+            ) { selectedUser ->
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragmentContainer, PlannerChatFragment().apply {
+                        arguments = Bundle().apply {
+                            putBoolean("isChatOpen", true)
+                            putString("recipientId", selectedUser.uid)
+                        }
+                    })
+                    .addToBackStack(null)
+                    .commit()
+            }
+
+            listBinding.recyclerChats.adapter = adapter
+
+            users.forEach { recipient ->
+                val chatId = if (user.uid < recipient.uid) {
+                    "${user.uid}-${recipient.uid}"
+                } else {
+                    "${recipient.uid}-${user.uid}"
+                }
+
+                db.collection("chats").document(chatId)
+                    .collection("messages")
+                    .orderBy("timestamp", Query.Direction.DESCENDING)
+                    .limit(1)
+                    .addSnapshotListener { messageSnapshot, messageError ->
+                        if (messageError != null) {
+                            Log.e("ChatList", "Error fetching last message", messageError)
+                            return@addSnapshotListener
+                        }
+
+                        messageSnapshot?.documents?.firstOrNull()?.let { doc ->
+                            val data = doc.data
+                            val lastMessage = data?.get("message") as? String ?: ""
+                            val timestamp = data?.get("timestamp") as? Long ?: 0L
+                            val recipientId = data?.get("recipientId") as? String ?: ""
+                            adapter.updateLastMessage(
+                                recipient.uid,
+                                lastMessage,
+                                formatTimestamp(timestamp),
+                                recipientId
+                            )
+                        }
+                    }
+            }
+        }
     }
 
     private fun setupChatScreen(recipientId: String) {

@@ -22,5 +22,6 @@ data class User(
     var website: String = "",
     var profileImage: String = "",
     var services: List<String> = emptyList(),
-    var portfolioImages: List<String> = emptyList()
+    var portfolioImages: List<String> = emptyList(),
+    var selectedPlannerId: String? = null
 )

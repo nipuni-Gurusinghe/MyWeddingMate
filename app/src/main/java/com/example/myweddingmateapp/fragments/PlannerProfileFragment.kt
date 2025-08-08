@@ -15,12 +15,17 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import com.example.myweddingmateapp.LoginActivity
 import com.example.myweddingmateapp.R
+import com.example.myweddingmateapp.models.Review
+import com.example.myweddingmateapp.models.Service
 
 import com.example.myweddingmateapp.models.User
+import com.example.myweddingmateapp.utils.DatabaseHelper
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import java.io.ByteArrayOutputStream
@@ -28,9 +33,16 @@ import java.io.File
 import java.io.FileOutputStream
 
 class PlannerProfileFragment : Fragment() {
-
+    private lateinit var btnAddReview: Button
+    private lateinit var btnAddService: Button
+    private lateinit var btnAddPortfolioItem: Button
+    private lateinit var btnEditPicture: ImageButton
+    private lateinit var btnUpdate: Button
+    private lateinit var btnSignOut: Button
+    private lateinit var btnAddSpecialty: Button
+    private lateinit var specialtiesChipGroup: ChipGroup
+    private lateinit var availabilityChipGroup: ChipGroup
     private lateinit var profilePicture: ImageView
-    private lateinit var btnEditPicture: ImageView
     private lateinit var editName: EditText
     private lateinit var editEmail: EditText
     private lateinit var editPhone: EditText
@@ -42,42 +54,58 @@ class PlannerProfileFragment : Fragment() {
     private lateinit var editInstagram: EditText
     private lateinit var editFacebook: EditText
     private lateinit var editWebsite: EditText
-    private lateinit var specialtiesChipGroup: ChipGroup
-    private lateinit var availabilityChipGroup: ChipGroup
-    private lateinit var btnUpdate: Button
 
-    private var currentUser: User? = null
+    private var isPlanner: Boolean = false
+    private val auth = FirebaseAuth.getInstance()
+    private val db = FirebaseFirestore.getInstance()
+    private lateinit var dbHelper: DatabaseHelper
     private var selectedImageBitmap: Bitmap? = null
-    private val auth = Firebase.auth
-    private val db = Firebase.firestore
 
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+
+        return inflater.inflate(R.layout.fragment_planner_profile, container, false)
+    }
     private val galleryLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        if (uri != null) {
+        uri?.let {
             try {
                 val inputStream = requireContext().contentResolver.openInputStream(uri)
                 selectedImageBitmap = BitmapFactory.decodeStream(inputStream)
                 profilePicture.setImageBitmap(selectedImageBitmap)
-                saveProfileImageLocally(selectedImageBitmap)
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Failed to load image", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Failed to load image", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_planner_profile, container, false)
+    private val cameraLauncher = registerForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
+        bitmap?.let {
+            selectedImageBitmap = bitmap
+            profilePicture.setImageBitmap(bitmap)
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        setupViews(view)
+        dbHelper = DatabaseHelper(requireContext())
+        initViews(view)
         loadUserData()
         setupButtons()
+
     }
 
-    private fun setupViews(view: View) {
-        profilePicture = view.findViewById(R.id.profilePicture)
+    private fun initViews(view: View) {
+        btnAddReview = view.findViewById(R.id.btnAddReview)
+        btnAddService = view.findViewById(R.id.btnAddService)
+        btnAddPortfolioItem = view.findViewById(R.id.btnAddPortfolioItem)
         btnEditPicture = view.findViewById(R.id.btnEditPicture)
+        btnUpdate = view.findViewById(R.id.btnUpdate)
+        btnAddSpecialty = view.findViewById(R.id.btnAddSpecialty)
+        specialtiesChipGroup = view.findViewById(R.id.specialtiesChipGroup)
+        availabilityChipGroup = view.findViewById(R.id.availabilityChipGroup)
+        profilePicture = view.findViewById(R.id.profilePicture)
         editName = view.findViewById(R.id.editName)
         editEmail = view.findViewById(R.id.editEmail)
         editPhone = view.findViewById(R.id.editPhone)
@@ -89,69 +117,37 @@ class PlannerProfileFragment : Fragment() {
         editInstagram = view.findViewById(R.id.editInstagram)
         editFacebook = view.findViewById(R.id.editFacebook)
         editWebsite = view.findViewById(R.id.editWebsite)
-        specialtiesChipGroup = view.findViewById(R.id.specialtiesChipGroup)
-        availabilityChipGroup = view.findViewById(R.id.availabilityChipGroup)
-        btnUpdate = view.findViewById(R.id.btnUpdate)
-        view.findViewById<Button>(R.id.btnSignOut).setOnClickListener { signOut() }
-        view.findViewById<Button>(R.id.btnAddReview).visibility = View.GONE
+        btnSignOut = view.findViewById(R.id.btnSignOut)
     }
 
     private fun loadUserData() {
-        val uid = auth.currentUser?.uid
-        if (uid != null) {
-            db.collection("users").document(uid).get().addOnSuccessListener { document ->
-                currentUser = document.toObject(User::class.java)
-                if (currentUser != null) {
-                    showUserData(currentUser!!)
-                    loadProfileImage()
-                    checkUserRole(document)
+        auth.currentUser?.uid?.let { uid ->
+            db.collection("users").document(uid).get()
+                .addOnSuccessListener { document ->
+                    isPlanner = document.getString("role") == "Wedding Planner"
+                    updateUIForUserRole()
+                    document.toObject(User::class.java)?.let { user ->
+                        populateUserData(user)
+                    }
                 }
-            }
         }
     }
 
-    private fun checkUserRole(document: DocumentSnapshot) {
-        val role = document.getString("role") ?: "Planner"
-        val isUser = role == "User"
-
-        view?.findViewById<Button>(R.id.btnAddReview)?.visibility = if (isUser) View.VISIBLE else View.GONE
-
-        val fields = listOf(
-            editName, editEmail, editPhone, editLocation,
-            editCompany, editYearsExperience, editPriceRange,
-            editBio, editInstagram, editFacebook, editWebsite,
-            btnUpdate, btnEditPicture
-        )
-
-        fields.forEach { it.isEnabled = !isUser }
-
-        for (i in 0 until specialtiesChipGroup.childCount) {
-            val chip = specialtiesChipGroup.getChildAt(i) as? Chip
-            chip?.isCloseIconVisible = !isUser
-            chip?.isClickable = !isUser
-        }
-
-        availabilityChipGroup.isEnabled = !isUser
-        view?.findViewById<Button>(R.id.btnAddSpecialty)?.visibility = if (isUser) View.GONE else View.VISIBLE
-    }
-
-    private fun showUserData(user: User) {
-        editName.setText(user.name ?: "")
-        editEmail.setText(user.email ?: "")
-        editPhone.setText(user.phoneNumber ?: "")
-        editLocation.setText(user.location ?: "")
-        editCompany.setText(user.company ?: "")
-        editYearsExperience.setText(user.yearsExperience?.toString() ?: "")
-        editPriceRange.setText(user.priceRange ?: "")
-        editBio.setText(user.bio ?: "")
-        editInstagram.setText(user.instagram ?: "")
-        editFacebook.setText(user.facebook ?: "")
-        editWebsite.setText(user.website ?: "")
+    private fun populateUserData(user: User) {
+        editName.setText(user.name)
+        editEmail.setText(user.email)
+        editPhone.setText(user.phoneNumber)
+        editLocation.setText(user.location)
+        editCompany.setText(user.company)
+        editYearsExperience.setText(user.yearsExperience?.toString())
+        editPriceRange.setText(user.priceRange)
+        editBio.setText(user.bio)
+        editInstagram.setText(user.instagram)
+        editFacebook.setText(user.facebook)
+        editWebsite.setText(user.website)
 
         specialtiesChipGroup.removeAllViews()
-        user.specialties?.forEach { specialty ->
-            addSpecialtyChip(specialty)
-        }
+        user.specialties?.forEach { addSpecialtyChip(it) }
 
         when (user.availability) {
             "Available" -> availabilityChipGroup.check(R.id.chipAvailable)
@@ -160,124 +156,228 @@ class PlannerProfileFragment : Fragment() {
         }
     }
 
-    private fun addSpecialtyChip(text: String) {
-        val chip = Chip(requireContext())
-        chip.text = text
-        chip.isCloseIconVisible = true
-        chip.setOnCloseIconClickListener { specialtiesChipGroup.removeView(chip) }
-        chip.setChipBackgroundColorResource(R.color.chip_background)
-        specialtiesChipGroup.addView(chip)
-    }
+    private fun updateUIForUserRole() {
+        btnAddReview.visibility = if (isPlanner) View.GONE else View.VISIBLE
+        btnAddService.visibility = if (isPlanner) View.VISIBLE else View.GONE
+        btnAddPortfolioItem.visibility = if (isPlanner) View.VISIBLE else View.GONE
 
-    private fun loadProfileImage() {
-        val imageFile = File(requireContext().filesDir, "profile_picture.jpg")
-        if (imageFile.exists()) {
-            profilePicture.setImageBitmap(BitmapFactory.decodeFile(imageFile.absolutePath))
-        } else {
-            profilePicture.setImageResource(R.drawable.profile_circle_background)
+        val editableViews = listOf(
+            btnEditPicture, btnUpdate, btnAddSpecialty,
+            specialtiesChipGroup, availabilityChipGroup,
+            editName, editEmail, editPhone, editLocation,
+            editCompany, editYearsExperience, editPriceRange,
+            editBio, editInstagram, editFacebook, editWebsite
+        )
+
+        editableViews.forEach { it.isEnabled = isPlanner }
+
+        for (i in 0 until specialtiesChipGroup.childCount) {
+            (specialtiesChipGroup.getChildAt(i) as? Chip)?.isCloseIconVisible = isPlanner
         }
     }
 
     private fun setupButtons() {
-        btnEditPicture.setOnClickListener { pickImage() }
-        btnUpdate.setOnClickListener { updateProfile() }
-        view?.findViewById<Button>(R.id.btnAddSpecialty)?.setOnClickListener { addSpecialtyDialog() }
-    }
+        btnAddReview.setOnClickListener {
+            if (!isPlanner) showAddReviewDialog()
+            else Toast.makeText(context, "Only users can add reviews", Toast.LENGTH_SHORT).show()
+        }
 
-    private fun pickImage() {
-        galleryLauncher.launch("image/*")
-    }
+        btnAddService.setOnClickListener {
+            if (isPlanner) showAddServiceDialog()
+            else Toast.makeText(context, "Only planners can add services", Toast.LENGTH_SHORT).show()
+        }
 
-    private fun signOut() {
-        auth.signOut()
-        startActivity(Intent(requireContext(), LoginActivity::class.java))
-        requireActivity().finish()
-    }
+        btnAddPortfolioItem.setOnClickListener {
+            if (isPlanner) showAddPortfolioDialog()
+            else Toast.makeText(context, "Only planners can add portfolio items", Toast.LENGTH_SHORT).show()
+        }
 
-    private fun saveProfileImageLocally(bitmap: Bitmap?) {
-        if (bitmap == null) return
+        btnEditPicture.setOnClickListener {
+            if (isPlanner) pickImage()
+            else Toast.makeText(context, "Only planners can edit profile", Toast.LENGTH_SHORT).show()
+        }
 
-        try {
-            val file = File(requireContext().filesDir, "profile_picture.jpg")
-            FileOutputStream(file).use { stream ->
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, stream)
-            }
-        } catch (e: Exception) {
-            Toast.makeText(requireContext(), "Failed to save image", Toast.LENGTH_SHORT).show()
+        btnUpdate.setOnClickListener {
+            if (isPlanner) updateProfile()
+            else Toast.makeText(context, "Only planners can update profile", Toast.LENGTH_SHORT).show()
+        }
+
+        btnAddSpecialty.setOnClickListener {
+            if (isPlanner) showAddSpecialtyDialog()
+            else Toast.makeText(context, "Only planners can add specialties", Toast.LENGTH_SHORT).show()
+        }
+
+        btnSignOut.setOnClickListener {
+            signOutUser()
         }
     }
 
-    private fun addSpecialtyDialog() {
-        val input = EditText(requireContext())
+    private fun signOutUser() {
         AlertDialog.Builder(requireContext())
-            .setTitle("Add New Specialty")
-            .setView(input)
-            .setPositiveButton("Add") { _, _ ->
-                val text = input.text.toString().trim()
-                if (text.isNotEmpty()) {
-                    addSpecialtyChip(text)
-                }
+            .setTitle("Sign Out")
+            .setMessage("Are you sure you want to sign out?")
+            .setPositiveButton("Yes") { _, _ ->
+                performSignOut()
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton("No", null)
             .show()
     }
 
+    private fun performSignOut() {
+        FirebaseAuth.getInstance().signOut()
+        navigateToLogin()
+    }
+
+    private fun navigateToLogin() {
+        val intent = Intent(requireActivity(), LoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        startActivity(intent)
+        requireActivity().finish()
+    }
     private fun updateProfile() {
-        if (editName.text.toString().trim().isEmpty() || editEmail.text.toString().trim().isEmpty()) {
-            Toast.makeText(requireContext(), "Name and email are required", Toast.LENGTH_SHORT).show()
-            return
-        }
+        val uid = auth.currentUser?.uid ?: return
 
-        val specialties = mutableListOf<String>()
-        for (i in 0 until specialtiesChipGroup.childCount) {
-            val chip = specialtiesChipGroup.getChildAt(i) as? Chip
-            if (chip != null) {
-                specialties.add(chip.text.toString())
+        val specialties = mutableListOf<String>().apply {
+            for (i in 0 until specialtiesChipGroup.childCount) {
+                (specialtiesChipGroup.getChildAt(i) as? Chip)?.text?.toString()?.let { add(it) }
             }
         }
 
-        var availability = ""
-        val checkedId = availabilityChipGroup.checkedChipId
-        if (checkedId == R.id.chipAvailable) {
-            availability = "Available"
-        } else if (checkedId == R.id.chipLimited) {
-            availability = "Limited Availability"
-        } else if (checkedId == R.id.chipUnavailable) {
-            availability = "Currently Unavailable"
+        val availability = when (availabilityChipGroup.checkedChipId) {
+            R.id.chipAvailable -> "Available"
+            R.id.chipLimited -> "Limited Availability"
+            R.id.chipUnavailable -> "Currently Unavailable"
+            else -> ""
         }
 
-        val user = currentUser ?: User()
-        user.name = editName.text.toString().trim()
-        user.email = editEmail.text.toString().trim()
-        user.phoneNumber = editPhone.text.toString().trim().takeIf { it.isNotEmpty() }.toString()
-        user.location = editLocation.text.toString().trim().takeIf { it.isNotEmpty() }.toString()
-        user.company = editCompany.text.toString().trim().takeIf { it.isNotEmpty() }.toString()
-        user.yearsExperience = editYearsExperience.text.toString().trim().toIntOrNull()
-        user.priceRange = editPriceRange.text.toString().trim().takeIf { it.isNotEmpty() }.toString()
-        user.bio = editBio.text.toString().trim().takeIf { it.isNotEmpty() }.toString()
-        user.instagram = editInstagram.text.toString().trim().takeIf { it.isNotEmpty() }.toString()
-        user.facebook = editFacebook.text.toString().trim().takeIf { it.isNotEmpty() }.toString()
-        user.website = editWebsite.text.toString().trim().takeIf { it.isNotEmpty() }.toString()
-        user.specialties = specialties
-        user.availability = availability
+        val user = User(
+            uid = uid,
+            name = editName.text.toString(),
+            email = editEmail.text.toString(),
+            phoneNumber = editPhone.text.toString(),
+            location = editLocation.text.toString(),
+            company = editCompany.text.toString(),
+            yearsExperience = editYearsExperience.text.toString().toIntOrNull(),
+            priceRange = editPriceRange.text.toString(),
+            bio = editBio.text.toString(),
+            instagram = editInstagram.text.toString(),
+            facebook = editFacebook.text.toString(),
+            website = editWebsite.text.toString(),
+            specialties = specialties,
+            availability = availability,
+            role = if (isPlanner) "Planner" else "User"
+        )
 
-        if (selectedImageBitmap != null) {
-            ByteArrayOutputStream().use { stream ->
-                selectedImageBitmap!!.compress(Bitmap.CompressFormat.JPEG, 70, stream)
-                user.profileImage = android.util.Base64.encodeToString(stream.toByteArray(), android.util.Base64.DEFAULT)
+        db.collection("users").document(uid).set(user)
+            .addOnSuccessListener {
+                Toast.makeText(context, "Profile updated", Toast.LENGTH_SHORT).show()
+                if (selectedImageBitmap != null) {
+                    dbHelper.addPortfolioImage(selectedImageBitmap!!)
+                }
             }
-        }
+            .addOnFailureListener {
+                Toast.makeText(context, "Update failed", Toast.LENGTH_SHORT).show()
+            }
+    }
 
-        val uid = auth.currentUser?.uid
-        if (uid != null) {
-            db.collection("users").document(uid).set(user)
-                .addOnSuccessListener {
-                    currentUser = user
-                    Toast.makeText(requireContext(), "Profile updated", Toast.LENGTH_SHORT).show()
+    private fun pickImage() {
+        val options = arrayOf("Take Photo", "Choose from Gallery", "Cancel")
+        AlertDialog.Builder(requireContext())
+            .setTitle("Select Image Source")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> takePhoto()
+                    1 -> chooseFromGallery()
                 }
-                .addOnFailureListener {
-                    Toast.makeText(requireContext(), "Update failed", Toast.LENGTH_SHORT).show()
-                }
+            }
+            .show()
+    }
+
+    private fun takePhoto() {
+        try {
+            cameraLauncher.launch(null)
+        } catch (e: Exception) {
+            Toast.makeText(context, "Camera not available", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun chooseFromGallery() {
+        try {
+            galleryLauncher.launch("image/*")
+        } catch (e: Exception) {
+            Toast.makeText(context, "Gallery not available", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showAddReviewDialog() {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_add_review, null)
+        AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .setPositiveButton("Add") { _, _ ->
+                val title = dialogView.findViewById<EditText>(R.id.etReviewTitle).text.toString()
+                val comment = dialogView.findViewById<EditText>(R.id.etReviewComment).text.toString()
+                val rating = dialogView.findViewById<RatingBar>(R.id.ratingBar).rating
+                val userName = auth.currentUser?.displayName ?: "Anonymous"
+
+                if (title.isNotEmpty() && comment.isNotEmpty()) {
+                    dbHelper.addReview(Review(title, comment, rating, userName), auth.currentUser?.uid ?: "")
+                    Toast.makeText(context, "Review added", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .show()
+    }
+
+    private fun showAddServiceDialog() {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_add_service, null)
+        AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .setPositiveButton("Add") { _, _ ->
+                val name = dialogView.findViewById<EditText>(R.id.etServiceName).text.toString()
+                val desc = dialogView.findViewById<EditText>(R.id.etServiceDescription).text.toString()
+                val price = dialogView.findViewById<EditText>(R.id.etServicePrice).text.toString()
+
+                if (name.isNotEmpty() && desc.isNotEmpty() && price.isNotEmpty()) {
+                    dbHelper.addService(Service(0, name, desc, price))
+                    Toast.makeText(context, "Service added", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .show()
+    }
+
+    private fun showAddPortfolioDialog() {
+        val options = arrayOf("Take Photo", "Choose from Gallery", "Cancel")
+        AlertDialog.Builder(requireContext())
+            .setTitle("Add Portfolio Image")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> takePhoto()
+                    1 -> chooseFromGallery()
+                }
+            }
+            .show()
+    }
+
+    private fun showAddSpecialtyDialog() {
+        val input = EditText(requireContext())
+        AlertDialog.Builder(requireContext())
+            .setTitle("Add Specialty")
+            .setView(input)
+            .setPositiveButton("Add") { _, _ ->
+                input.text.toString().takeIf { it.isNotEmpty() }?.let { text ->
+                    addSpecialtyChip(text)
+                }
+            }
+            .show()
+    }
+
+    private fun addSpecialtyChip(text: String) {
+        val chip = Chip(requireContext()).apply {
+            this.text = text
+            isCloseIconVisible = true
+            setOnCloseIconClickListener { specialtiesChipGroup.removeView(this) }
+            setChipBackgroundColorResource(R.color.chip_background)
+        }
+        specialtiesChipGroup.addView(chip)
     }
 }

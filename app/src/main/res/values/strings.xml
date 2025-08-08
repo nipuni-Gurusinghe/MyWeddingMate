@@ -112,6 +112,12 @@
     <string name="reminder_date_hint">Add Reminder Date</string>
     <string name="save">Add budget</string>
     <string name="sign_out">Sign Out</string>
+    <string name="review_rating">Rating</string>
+    <string name="review_title">add review</string>
+    <string name="review_comment">Add Review Comment</string>
+    <string name="service_price">Add Service Price</string>
+    <string name="service_description">Decribe your service</string>
+    <string name="service_name">Add Service Name</string>
 
 </resources>
 
