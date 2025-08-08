@@ -61,21 +61,7 @@
                     android:elevation="4dp"/>
             </FrameLayout>
 
-            <Button
-                android:id="@+id/btnSignOut"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="24dp"
-                android:text="@string/sign_out"
-                android:textColor="@android:color/white"
-                android:backgroundTint="#D32F2F"
-                android:background="@drawable/button_gradient"
-                android:elevation="6dp"
-                app:cornerRadius="12dp"
-                app:strokeColor="#B71C1C"
-                app:strokeWidth="1dp"/>
+
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
@@ -614,6 +600,22 @@
                 app:cornerRadius="12dp"
                 android:importantForAccessibility="yes"/>
 
+            <Button
+                android:id="@+id/btnSignOut"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="24dp"
+                android:text="@string/sign_out"
+                android:textColor="@android:color/white"
+                android:backgroundTint="#D32F2F"
+                android:background="@drawable/button_gradient"
+                android:elevation="6dp"
+                app:cornerRadius="12dp"
+                app:strokeColor="#B71C1C"
+                app:strokeWidth="1dp"/>
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -652,8 +654,6 @@
                     android:orientation="horizontal"
                     android:paddingHorizontal="8dp">
 
-                    <include layout="@layout/item_review"/>
-                    <include layout="@layout/item_review"/>
                     <include layout="@layout/item_review"/>
                 </LinearLayout>
             </HorizontalScrollView>
