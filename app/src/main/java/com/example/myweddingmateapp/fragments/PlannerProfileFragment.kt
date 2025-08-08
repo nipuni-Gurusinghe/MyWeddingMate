@@ -90,6 +90,8 @@ class PlannerProfileFragment : Fragment() {
         dbHelper = DatabaseHelper(requireContext())
         initViews(view)
         loadUserData()
+        loadReviews()
+        loadServices()
         setupButtons()
     }
 
@@ -318,11 +320,27 @@ class PlannerProfileFragment : Fragment() {
                 val comment = dialogView.findViewById<EditText>(R.id.etReviewComment).text.toString()
                 val rating = dialogView.findViewById<RatingBar>(R.id.ratingBar).rating
                 val userName = auth.currentUser?.displayName ?: "Anonymous"
+                val plannerId = auth.currentUser?.uid ?: ""
 
                 if (title.isNotEmpty() && comment.isNotEmpty()) {
-                    dbHelper.addReview(Review(title, comment, rating, userName), auth.currentUser?.uid ?: "")
-                    loadReviews()
-                    Toast.makeText(context, "Review added", Toast.LENGTH_SHORT).show()
+                    val review = Review(title, comment, rating, userName)
+                    dbHelper.addReview(review, plannerId)
+                    val reviewData = hashMapOf(
+                        "title" to title,
+                        "comment" to comment,
+                        "rating" to rating,
+                        "userName" to userName,
+                        "plannerId" to plannerId,
+                        "timestamp" to System.currentTimeMillis()
+                    )
+                    db.collection("reviews").add(reviewData)
+                        .addOnSuccessListener {
+                            loadReviews()
+                            Toast.makeText(context, "Review added", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener {
+                            Toast.makeText(context, "Failed to save review to Firestore", Toast.LENGTH_SHORT).show()
+                        }
                 }
             }
             .show()
@@ -336,11 +354,26 @@ class PlannerProfileFragment : Fragment() {
                 val name = dialogView.findViewById<EditText>(R.id.etServiceName).text.toString()
                 val desc = dialogView.findViewById<EditText>(R.id.etServiceDescription).text.toString()
                 val price = dialogView.findViewById<EditText>(R.id.etServicePrice).text.toString()
+                val plannerId = auth.currentUser?.uid ?: ""
 
                 if (name.isNotEmpty() && desc.isNotEmpty() && price.isNotEmpty()) {
-                    dbHelper.addService(Service(0, name, desc, price))
-                    loadServices()
-                    Toast.makeText(context, "Service added", Toast.LENGTH_SHORT).show()
+                    val service = Service(0, name, desc, price)
+                    dbHelper.addService(service)
+                    val serviceData = hashMapOf(
+                        "name" to name,
+                        "description" to desc,
+                        "price" to price,
+                        "plannerId" to plannerId,
+                        "timestamp" to System.currentTimeMillis()
+                    )
+                    db.collection("services").add(serviceData)
+                        .addOnSuccessListener {
+                            loadServices()
+                            Toast.makeText(context, "Service added", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener {
+                            Toast.makeText(context, "Failed to save service to Firestore", Toast.LENGTH_SHORT).show()
+                        }
                 }
             }
             .show()
@@ -384,13 +417,35 @@ class PlannerProfileFragment : Fragment() {
 
     private fun loadServices() {
         servicesContainer.removeAllViews()
-        val services = dbHelper.getServicesForCurrentUser()
-        services.forEach { service ->
-            val view = LayoutInflater.from(context).inflate(R.layout.item_service, servicesContainer, false)
-            view.findViewById<TextView>(R.id.tvServiceName).text = service.name
-            view.findViewById<TextView>(R.id.tvServicePrice).text = service.price
-            servicesContainer.addView(view)
-        }
+        val plannerId = auth.currentUser?.uid ?: return
+        db.collection("services")
+            .whereEqualTo("plannerId", plannerId)
+            .get()
+            .addOnSuccessListener { documents ->
+                documents.forEach { document ->
+                    val service = Service(
+                        id = 0,
+                        name = document.getString("name") ?: "",
+                        description = document.getString("description") ?: "",
+                        price = document.getString("price") ?: ""
+                    )
+                    dbHelper.addService(service)
+                    val view = LayoutInflater.from(context).inflate(R.layout.item_service, servicesContainer, false)
+                    view.findViewById<TextView>(R.id.tvServiceName).text = service.name
+                    view.findViewById<TextView>(R.id.tvServicePrice).text = service.price
+                    servicesContainer.addView(view)
+                }
+            }
+            .addOnFailureListener {
+                Toast.makeText(context, "Failed to load services from Firestore", Toast.LENGTH_SHORT).show()
+                val services = dbHelper.getServicesForCurrentUser()
+                services.forEach { service ->
+                    val view = LayoutInflater.from(context).inflate(R.layout.item_service, servicesContainer, false)
+                    view.findViewById<TextView>(R.id.tvServiceName).text = service.name
+                    view.findViewById<TextView>(R.id.tvServicePrice).text = service.price
+                    servicesContainer.addView(view)
+                }
+            }
     }
 
     private fun loadPortfolio() {
@@ -405,13 +460,36 @@ class PlannerProfileFragment : Fragment() {
 
     private fun loadReviews() {
         reviewsContainer.removeAllViews()
-        val reviews = dbHelper.getReviewsForUser(auth.currentUser?.uid ?: "")
-        reviews.forEach { review ->
-            val view = LayoutInflater.from(context).inflate(R.layout.item_review, reviewsContainer, false)
-            view.findViewById<TextView>(R.id.reviewText).text = review.comment
-            view.findViewById<RatingBar>(R.id.reviewRating).rating = review.rating
-            view.findViewById<TextView>(R.id.reviewerName).text = review.userName
-            reviewsContainer.addView(view)
-        }
+        val plannerId = auth.currentUser?.uid ?: return
+        db.collection("reviews")
+            .whereEqualTo("plannerId", plannerId)
+            .get()
+            .addOnSuccessListener { documents ->
+                documents.forEach { document ->
+                    val review = Review(
+                        title = document.getString("title") ?: "",
+                        comment = document.getString("comment") ?: "",
+                        rating = document.getDouble("rating")?.toFloat() ?: 0f,
+                        userName = document.getString("userName") ?: "Anonymous"
+                    )
+                    dbHelper.addReview(review, plannerId)
+                    val view = LayoutInflater.from(context).inflate(R.layout.item_review, reviewsContainer, false)
+                    view.findViewById<TextView>(R.id.reviewText).text = review.comment
+                    view.findViewById<RatingBar>(R.id.reviewRating).rating = review.rating
+                    view.findViewById<TextView>(R.id.reviewerName).text = review.userName
+                    reviewsContainer.addView(view)
+                }
+            }
+            .addOnFailureListener {
+                Toast.makeText(context, "Failed to load reviews from Firestore", Toast.LENGTH_SHORT).show()
+                val reviews = dbHelper.getReviewsForUser(plannerId)
+                reviews.forEach { review ->
+                    val view = LayoutInflater.from(context).inflate(R.layout.item_review, reviewsContainer, false)
+                    view.findViewById<TextView>(R.id.reviewText).text = review.comment
+                    view.findViewById<RatingBar>(R.id.reviewRating).rating = review.rating
+                    view.findViewById<TextView>(R.id.reviewerName).text = review.userName
+                    reviewsContainer.addView(view)
+                }
+            }
     }
 }
