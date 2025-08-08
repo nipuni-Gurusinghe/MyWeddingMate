@@ -345,7 +345,7 @@
 
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Navigation Bar - Fixed at bottom -->
+
     <include
         android:id="@+id/navBar"
         layout="@layout/nav_bar"
