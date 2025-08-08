@@ -1,5 +1,6 @@
 package com.example.myweddingmateapp.adapters
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,7 +12,7 @@ import com.example.myweddingmateapp.models.User
 
 class PlannerChatListAdapter(
     private var allUsers: List<User>,
-    private val currentUserRole: String = "Wedding Planner",
+    private val currentUserRole: String = "User",
     private val currentUserId: String,
     private val onClick: (User) -> Unit
 ) : RecyclerView.Adapter<PlannerChatListAdapter.ViewHolder>() {
@@ -72,16 +73,20 @@ class PlannerChatListAdapter(
 
     private fun filterList() {
         filteredList.clear()
+
+        Log.d("ChatFilter", "Filtering as: $currentUserRole")
+
         for (user in allUsers) {
-            if (currentUserRole == "User") {
-                if (user.role == "Wedding Planner") {
-                    filteredList.add(user)
-                }
-            } else if (currentUserRole == "Wedding Planner") {
-                if (user.role == "User") {
-                    filteredList.add(user)
-                }
+            if (currentUserRole == "User" && user.role == "Wedding Planner") {
+                filteredList.add(user)
+                Log.v("ChatFilter", "+ Planner: ${user.uid.takeLast(4)}")
+            }
+            else if (currentUserRole == "Wedding Planner" && user.role == "User") {
+                filteredList.add(user)
+                Log.v("ChatFilter", "+ User: ${user.uid.takeLast(4)}")
             }
         }
+
+        Log.d("ChatFilter", "Filtered count: ${filteredList.size}")
     }
 }

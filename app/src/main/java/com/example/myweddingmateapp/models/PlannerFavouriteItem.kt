@@ -1,6 +1,6 @@
 package com.example.myweddingmateapp.models
 
-import java.util.Date
+import java.io.Serializable
 
 data class PlannerFavouriteItem(
     val id: String = "",
@@ -9,7 +9,7 @@ data class PlannerFavouriteItem(
     val addedDate: String = "",
     val budget: Double = 0.0,
     val currency: String = "USD",
-    val reminderDate: Date? = null,
+    val reminderDate: String = "",
     val isFavorite: Boolean = false,
     val notes: String = "",
     val userId: String = ""

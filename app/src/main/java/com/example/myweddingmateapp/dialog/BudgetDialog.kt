@@ -18,13 +18,14 @@ import java.util.*
 class BudgetDialog(
     context: Context,
     private val favoriteItem: PlannerFavouriteItem,
-    private val onBudgetSaved: (Double, String) -> Unit
+    private val onBudgetSaved: (Double, String, Date?) -> Unit
 ) : AlertDialog(context) {
 
     private lateinit var binding: DialogBudgetBinding
     private val calendar = Calendar.getInstance()
     private val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
     private var selectedCurrency = "USD"
+    private var selectedDate: Date? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,13 +52,23 @@ class BudgetDialog(
     }
 
     private fun loadExistingData() {
-        if (favoriteItem.budget > 0) binding.editBudget.setText(favoriteItem.budget.toString())
+        favoriteItem.budget.takeIf { it > 0 }?.let {
+            binding.editBudget.setText(it.toString())
+        }
+
         favoriteItem.currency?.let {
             selectedCurrency = it
             binding.autoCompleteCurrency.setText(it, false)
         }
-        favoriteItem.reminderDate?.let {
-            binding.editReminderDate.setText(dateFormat.format(it))
+
+        favoriteItem.reminderDate?.let { dateString ->
+            try {
+                val parsedDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(dateString)
+                selectedDate = parsedDate
+                binding.editReminderDate.setText(dateFormat.format(parsedDate))
+            } catch (e: Exception) {
+                binding.editReminderDate.setText("")
+            }
         }
     }
 
@@ -66,6 +77,7 @@ class BudgetDialog(
             context,
             { _, year, month, day ->
                 calendar.set(year, month, day)
+                selectedDate = calendar.time
                 binding.editReminderDate.setText(dateFormat.format(calendar.time))
             },
             calendar.get(Calendar.YEAR),
@@ -88,7 +100,7 @@ class BudgetDialog(
             return
         }
 
-        onBudgetSaved(amount, selectedCurrency)
+        onBudgetSaved(amount, selectedCurrency, selectedDate)
         dismiss()
     }
 
@@ -96,7 +108,7 @@ class BudgetDialog(
         fun show(
             context: Context,
             favoriteItem: PlannerFavouriteItem,
-            onBudgetSaved: (Double, String) -> Unit
+            onBudgetSaved: (Double, String, Date?) -> Unit
         ): BudgetDialog {
             return BudgetDialog(context, favoriteItem, onBudgetSaved).apply {
                 window?.setBackgroundDrawableResource(android.R.color.white)
