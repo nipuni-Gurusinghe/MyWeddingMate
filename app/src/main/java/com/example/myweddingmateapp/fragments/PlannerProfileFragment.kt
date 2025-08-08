@@ -6,31 +6,26 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.myweddingmateapp.LoginActivity
 import com.example.myweddingmateapp.R
 import com.example.myweddingmateapp.models.Review
 import com.example.myweddingmateapp.models.Service
-
 import com.example.myweddingmateapp.models.User
 import com.example.myweddingmateapp.utils.DatabaseHelper
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileOutputStream
 
 class PlannerProfileFragment : Fragment() {
     private lateinit var btnAddReview: Button
@@ -43,17 +38,20 @@ class PlannerProfileFragment : Fragment() {
     private lateinit var specialtiesChipGroup: ChipGroup
     private lateinit var availabilityChipGroup: ChipGroup
     private lateinit var profilePicture: ImageView
-    private lateinit var editName: EditText
-    private lateinit var editEmail: EditText
-    private lateinit var editPhone: EditText
-    private lateinit var editLocation: EditText
-    private lateinit var editCompany: EditText
-    private lateinit var editYearsExperience: EditText
-    private lateinit var editPriceRange: EditText
-    private lateinit var editBio: EditText
-    private lateinit var editInstagram: EditText
-    private lateinit var editFacebook: EditText
-    private lateinit var editWebsite: EditText
+    private lateinit var editName: TextInputEditText
+    private lateinit var editEmail: TextInputEditText
+    private lateinit var editPhone: TextInputEditText
+    private lateinit var editLocation: TextInputEditText
+    private lateinit var editCompany: TextInputEditText
+    private lateinit var editYearsExperience: TextInputEditText
+    private lateinit var editPriceRange: TextInputEditText
+    private lateinit var editBio: TextInputEditText
+    private lateinit var editInstagram: TextInputEditText
+    private lateinit var editFacebook: TextInputEditText
+    private lateinit var editWebsite: TextInputEditText
+    private lateinit var portfolioContainer: LinearLayout
+    private lateinit var reviewsContainer: LinearLayout
+    private lateinit var servicesContainer: LinearLayout
 
     private var isPlanner: Boolean = false
     private val auth = FirebaseAuth.getInstance()
@@ -66,9 +64,9 @@ class PlannerProfileFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         return inflater.inflate(R.layout.fragment_planner_profile, container, false)
     }
+
     private val galleryLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
             try {
@@ -93,7 +91,6 @@ class PlannerProfileFragment : Fragment() {
         initViews(view)
         loadUserData()
         setupButtons()
-
     }
 
     private fun initViews(view: View) {
@@ -103,6 +100,7 @@ class PlannerProfileFragment : Fragment() {
         btnEditPicture = view.findViewById(R.id.btnEditPicture)
         btnUpdate = view.findViewById(R.id.btnUpdate)
         btnAddSpecialty = view.findViewById(R.id.btnAddSpecialty)
+        btnSignOut = view.findViewById(R.id.btnSignOut)
         specialtiesChipGroup = view.findViewById(R.id.specialtiesChipGroup)
         availabilityChipGroup = view.findViewById(R.id.availabilityChipGroup)
         profilePicture = view.findViewById(R.id.profilePicture)
@@ -117,7 +115,9 @@ class PlannerProfileFragment : Fragment() {
         editInstagram = view.findViewById(R.id.editInstagram)
         editFacebook = view.findViewById(R.id.editFacebook)
         editWebsite = view.findViewById(R.id.editWebsite)
-        btnSignOut = view.findViewById(R.id.btnSignOut)
+        portfolioContainer = view.findViewById(R.id.portfolioContainer)
+        reviewsContainer = view.findViewById(R.id.reviewsContainer)
+        servicesContainer = view.findViewById(R.id.servicesContainer)
     }
 
     private fun loadUserData() {
@@ -235,6 +235,7 @@ class PlannerProfileFragment : Fragment() {
         startActivity(intent)
         requireActivity().finish()
     }
+
     private fun updateProfile() {
         val uid = auth.currentUser?.uid ?: return
 
@@ -266,15 +267,13 @@ class PlannerProfileFragment : Fragment() {
             website = editWebsite.text.toString(),
             specialties = specialties,
             availability = availability,
-            role = if (isPlanner) "Planner" else "User"
+            role = if (isPlanner) "Wedding Planner" else "User"
         )
 
         db.collection("users").document(uid).set(user)
             .addOnSuccessListener {
                 Toast.makeText(context, "Profile updated", Toast.LENGTH_SHORT).show()
-                if (selectedImageBitmap != null) {
-                    dbHelper.addPortfolioImage(selectedImageBitmap!!)
-                }
+                selectedImageBitmap?.let { dbHelper.addPortfolioImage(it) }
             }
             .addOnFailureListener {
                 Toast.makeText(context, "Update failed", Toast.LENGTH_SHORT).show()
@@ -322,6 +321,7 @@ class PlannerProfileFragment : Fragment() {
 
                 if (title.isNotEmpty() && comment.isNotEmpty()) {
                     dbHelper.addReview(Review(title, comment, rating, userName), auth.currentUser?.uid ?: "")
+                    loadReviews()
                     Toast.makeText(context, "Review added", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -339,6 +339,7 @@ class PlannerProfileFragment : Fragment() {
 
                 if (name.isNotEmpty() && desc.isNotEmpty() && price.isNotEmpty()) {
                     dbHelper.addService(Service(0, name, desc, price))
+                    loadServices()
                     Toast.makeText(context, "Service added", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -379,5 +380,38 @@ class PlannerProfileFragment : Fragment() {
             setChipBackgroundColorResource(R.color.chip_background)
         }
         specialtiesChipGroup.addView(chip)
+    }
+
+    private fun loadServices() {
+        servicesContainer.removeAllViews()
+        val services = dbHelper.getServicesForCurrentUser()
+        services.forEach { service ->
+            val view = LayoutInflater.from(context).inflate(R.layout.item_service, servicesContainer, false)
+            view.findViewById<TextView>(R.id.tvServiceName).text = service.name
+            view.findViewById<TextView>(R.id.tvServicePrice).text = service.price
+            servicesContainer.addView(view)
+        }
+    }
+
+    private fun loadPortfolio() {
+        portfolioContainer.removeAllViews()
+        val portfolio = dbHelper.getPortfolioForCurrentUser()
+        portfolio.forEach { bitmap ->
+            val view = LayoutInflater.from(context).inflate(R.layout.item_portfolio_image, portfolioContainer, false)
+            view.findViewById<ImageView>(R.id.imgPortfolio).setImageBitmap(bitmap)
+            portfolioContainer.addView(view)
+        }
+    }
+
+    private fun loadReviews() {
+        reviewsContainer.removeAllViews()
+        val reviews = dbHelper.getReviewsForUser(auth.currentUser?.uid ?: "")
+        reviews.forEach { review ->
+            val view = LayoutInflater.from(context).inflate(R.layout.item_review, reviewsContainer, false)
+            view.findViewById<TextView>(R.id.reviewText).text = review.comment
+            view.findViewById<RatingBar>(R.id.reviewRating).rating = review.rating
+            view.findViewById<TextView>(R.id.reviewerName).text = review.userName
+            reviewsContainer.addView(view)
+        }
     }
 }
