@@ -2,6 +2,7 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/reviewCard"
     android:layout_width="280dp"
     android:layout_height="180dp"
     android:layout_marginEnd="16dp"
@@ -10,18 +11,21 @@
     app:cardElevation="4dp">
 
     <LinearLayout
+        android:id="@+id/reviewContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:padding="16dp">
 
         <LinearLayout
+            android:id="@+id/reviewerInfoLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginBottom="8dp">
 
             <ImageView
+                android:id="@+id/reviewerImage"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:src="@drawable/ic_people"
@@ -30,6 +34,7 @@
                 android:layout_marginEnd="12dp"/>
 
             <TextView
+                android:id="@+id/reviewerName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Sarah Johnson"
@@ -38,6 +43,7 @@
         </LinearLayout>
 
         <RatingBar
+            android:id="@+id/reviewRating"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:numStars="5"
@@ -47,6 +53,7 @@
             android:layout_marginBottom="8dp"/>
 
         <TextView
+            android:id="@+id/reviewText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Great service! The team was very professional and delivered excellent results."
@@ -54,6 +61,7 @@
             android:textSize="14sp"/>
 
         <TextView
+            android:id="@+id/reviewDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="2 days ago"
