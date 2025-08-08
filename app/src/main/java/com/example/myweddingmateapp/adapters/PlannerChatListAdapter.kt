@@ -1,5 +1,6 @@
 package com.example.myweddingmateapp.adapters
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -7,18 +8,27 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myweddingmateapp.R
-import com.example.myweddingmateapp.models.ChatItem
+import com.example.myweddingmateapp.models.User
 
 class PlannerChatListAdapter(
-    private val chats: List<ChatItem>,
-    private val onClick: (ChatItem) -> Unit
+    private var allUsers: List<User>,
+    private val currentUserRole: String = "User",
+    private val currentUserId: String,
+    private val onClick: (User) -> Unit
 ) : RecyclerView.Adapter<PlannerChatListAdapter.ViewHolder>() {
+
+    private val filteredList = mutableListOf<User>()
+
+    init {
+        filterList()
+    }
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val name: TextView = view.findViewById(R.id.txtName)
         val lastMessage: TextView = view.findViewById(R.id.txtLastMessage)
         val time: TextView = view.findViewById(R.id.txtTime)
         val profileImage: ImageView = view.findViewById(R.id.imgProfile)
+        val unreadBadge: View = view.findViewById(R.id.viewUnreadBadge)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -28,13 +38,55 @@ class PlannerChatListAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val chat = chats[position]
-        holder.name.text = chat.name
-        holder.lastMessage.text = chat.lastMessage
-        holder.time.text = chat.time
-        holder.profileImage.setImageResource(chat.profileImage)
-        holder.itemView.setOnClickListener { onClick(chat) }
+        val user = filteredList[position]
+        holder.name.text = user.name
+        holder.lastMessage.text = user.lastMessage
+        holder.time.text = user.lastMessageTime
+
+        if (user.unreadCount > 0) {
+            holder.unreadBadge.visibility = View.VISIBLE
+        } else {
+            holder.unreadBadge.visibility = View.GONE
+        }
+
+        holder.itemView.setOnClickListener { onClick(user) }
     }
 
-    override fun getItemCount() = chats.size
+    override fun getItemCount() = filteredList.size
+
+    fun updateList(newList: List<User>) {
+        allUsers = newList
+        filterList()
+        notifyDataSetChanged()
+    }
+
+    fun updateLastMessage(userId: String, message: String, timestamp: String, recipientId: String, unreadCount: Int = 0) {
+        val index = filteredList.indexOfFirst { it.uid == userId }
+        if (index != -1) {
+            filteredList[index].lastMessage = message
+            filteredList[index].lastMessageTime = timestamp
+            filteredList[index].recipientId = recipientId
+            filteredList[index].unreadCount = unreadCount
+            notifyItemChanged(index)
+        }
+    }
+
+    private fun filterList() {
+        filteredList.clear()
+
+        Log.d("ChatFilter", "Filtering as: $currentUserRole")
+
+        for (user in allUsers) {
+            if (currentUserRole == "User" && user.role == "Wedding Planner") {
+                filteredList.add(user)
+                Log.v("ChatFilter", "+ Planner: ${user.uid.takeLast(4)}")
+            }
+            else if (currentUserRole == "Wedding Planner" && user.role == "User") {
+                filteredList.add(user)
+                Log.v("ChatFilter", "+ User: ${user.uid.takeLast(4)}")
+            }
+        }
+
+        Log.d("ChatFilter", "Filtered count: ${filteredList.size}")
+    }
 }

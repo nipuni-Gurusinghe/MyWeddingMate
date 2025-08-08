@@ -1,6 +1,9 @@
 package com.example.myweddingmateapp.fragments
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,9 +14,16 @@ import com.example.myweddingmateapp.adapters.PlannerChatAdapter
 import com.example.myweddingmateapp.adapters.PlannerChatListAdapter
 import com.example.myweddingmateapp.databinding.FragmentPlannerChatBinding
 import com.example.myweddingmateapp.databinding.FragmentPlannerChatListBinding
-import com.example.myweddingmateapp.models.ChatItem
 import com.example.myweddingmateapp.models.ChatMessage
+import com.example.myweddingmateapp.models.User
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldPath
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.Query
+import java.text.SimpleDateFormat
+import java.util.*
 
 class PlannerChatFragment : Fragment() {
     private var _chatBinding: FragmentPlannerChatBinding? = null
@@ -21,28 +31,13 @@ class PlannerChatFragment : Fragment() {
     private val chatBinding get() = _chatBinding!!
     private val listBinding get() = _listBinding!!
 
-    private val chatList = listOf(
-        ChatItem("Nadeesha & Sahan", "Can we schedule a cake tasting?", "10:30 AM", R.drawable.ic_people),
-        ChatItem("Elegant Florals", "Floral decor delivery confirmed", "Yesterday", R.drawable.ic_people),
-        ChatItem("Ravi & Anjali", "Confirm pre-shoot appointment", "Jul 28", R.drawable.ic_people)
-    )
-
-    private val messageMap = mapOf(
-        "Nadeesha & Sahan" to listOf(
-            ChatMessage("Nadeesha & Sahan", "Hi there!", "10:30 AM", true),
-            ChatMessage("You", "Hello! How can I help?", "10:32 AM", false),
-            ChatMessage("Nadeesha & Sahan", "Can we schedule a cake tasting this Friday?", "10:33 AM", true)
-        ),
-        "Elegant Florals" to listOf(
-            ChatMessage("Elegant Florals", "Your floral order is ready!", "9:15 AM", true),
-            ChatMessage("You", "Great! When's the delivery date?", "9:20 AM", false),
-            ChatMessage("Elegant Florals", "Delivery confirmed for August 11", "9:22 AM", true)
-        ),
-        "Ravi & Anjali" to listOf(
-            ChatMessage("You", "Hi! About your pre-shoot...", "Jul 28", false),
-            ChatMessage("Ravi & Anjali", "Yes, please confirm our appointment", "Jul 28", true)
-        )
-    )
+    private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
+    private var usersListener: ListenerRegistration? = null
+    private var chatListener: ListenerRegistration? = null
+    private var currentUser: User? = null
+    private val dateFormat = SimpleDateFormat("h:mm a", Locale.getDefault())
+    private val dateDayFormat = SimpleDateFormat("MMM dd", Locale.getDefault())
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -51,60 +46,231 @@ class PlannerChatFragment : Fragment() {
     ): View {
         return if (arguments?.getBoolean("isChatOpen", false) == true) {
             _chatBinding = FragmentPlannerChatBinding.inflate(inflater, container, false)
-            setupChatScreen(arguments?.getString("recipientName") ?: "")
+            setupChatScreen(arguments?.getString("recipientId") ?: "")
             chatBinding.root
         } else {
             _listBinding = FragmentPlannerChatListBinding.inflate(inflater, container, false)
-            setupChatList()
+            loadCurrentUser()
             listBinding.root
         }
     }
 
-    private fun setupChatList() {
-        listBinding.recyclerChats.layoutManager = LinearLayoutManager(requireContext())
-        listBinding.recyclerChats.adapter = PlannerChatListAdapter(chatList) { chatItem ->
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, PlannerChatFragment().apply {
-                    arguments = Bundle().apply {
-                        putBoolean("isChatOpen", true)
-                        putString("recipientName", chatItem.name)
-                    }
-                })
-                .addToBackStack(null)
-                .commit()
-        }
-
-        listBinding.fabNewChat.setOnClickListener {
-            Snackbar.make(listBinding.root, "New chat started", Snackbar.LENGTH_SHORT).show()
+    private fun loadCurrentUser() {
+        auth.currentUser?.uid?.let { uid ->
+            db.collection("users").document(uid).get()
+                .addOnSuccessListener { document ->
+                    currentUser = document.toObject(User::class.java)
+                    Log.e("CurrentUser", currentUser.toString())
+                    currentUser?.let { setupChatList(it) }
+                }
         }
     }
 
-    private fun setupChatScreen(recipientName: String) {
-        chatBinding.toolbar.title = recipientName
+    private fun setupChatList(user: User) {
+        listBinding.recyclerChats.layoutManager = LinearLayoutManager(requireContext())
+
+        val query = if (user.role == "Wedding Planner") {
+            db.collection("users")
+                .whereEqualTo("role", "User")
+                .whereEqualTo("selectedPlannerId", user.uid)
+        } else {
+            if (user.selectedPlannerId != null && user.selectedPlannerId!!.isNotEmpty()) {
+                user.selectedPlannerId?.let { plannerId ->
+                    db.collection("users")
+                        .whereEqualTo("role", "Wedding Planner")
+                        .whereEqualTo(FieldPath.documentId(), plannerId)
+                }
+            } else {
+                db.collection("users").whereEqualTo("role", "NO_RESULTS")
+            }
+        }
+
+        usersListener = query?.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                Log.e("ChatList", "Error fetching users", error)
+                return@addSnapshotListener
+            }
+
+            val users = snapshot?.documents?.mapNotNull {
+                it.toObject(User::class.java)?.copy(uid = it.id)
+            } ?: emptyList()
+
+            val adapter = PlannerChatListAdapter(
+                users,
+                user.role,
+                user.uid
+            ) { selectedUser ->
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragmentContainer, PlannerChatFragment().apply {
+                        arguments = Bundle().apply {
+                            putBoolean("isChatOpen", true)
+                            putString("recipientId", selectedUser.uid)
+                        }
+                    })
+                    .addToBackStack(null)
+                    .commit()
+            }
+
+            listBinding.recyclerChats.adapter = adapter
+
+            users.forEach { recipient ->
+                val chatId = if (user.uid < recipient.uid) {
+                    "${user.uid}-${recipient.uid}"
+                } else {
+                    "${recipient.uid}-${user.uid}"
+                }
+
+                db.collection("chats").document(chatId)
+                    .collection("messages")
+                    .orderBy("timestamp", Query.Direction.DESCENDING)
+                    .limit(1)
+                    .addSnapshotListener { messageSnapshot, messageError ->
+                        if (messageError != null) {
+                            Log.e("ChatList", "Error fetching last message", messageError)
+                            return@addSnapshotListener
+                        }
+
+                        messageSnapshot?.documents?.firstOrNull()?.let { doc ->
+                            val data = doc.data
+                            val lastMessage = data?.get("message") as? String ?: ""
+                            val timestamp = data?.get("timestamp") as? Long ?: 0L
+                            val recipientId = data?.get("recipientId") as? String ?: ""
+                            adapter.updateLastMessage(
+                                recipient.uid,
+                                lastMessage,
+                                formatTimestamp(timestamp),
+                                recipientId
+                            )
+                        }
+                    }
+            }
+        }
+    }
+
+    private fun setupChatScreen(recipientId: String) {
+        var recipientName = ""
+
+        db.collection("users").document(recipientId).get()
+            .addOnSuccessListener { document ->
+                document.toObject(User::class.java)?.let { recipient ->
+                    recipientName = recipient.name
+                    chatBinding.toolbar.title = recipientName
+                    chatBinding.txtRecipientName.text = recipientName
+                    chatBinding.txtRecipientStatus.text = ""
+                }
+            }
+
+        val currentUserId = auth.currentUser?.uid ?: return
+        val chatId = if (currentUserId < recipientId) {
+            "$currentUserId-$recipientId"
+        } else {
+            "$recipientId-$currentUserId"
+        }
+
+        chatListener = db.collection("chats").document(chatId)
+            .collection("messages")
+            .orderBy("timestamp")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) return@addSnapshotListener
+
+                val messages = snapshot?.documents?.mapNotNull { doc ->
+                    val data = doc.data
+                    ChatMessage(
+                        senderId = data?.get("senderId") as? String ?: "",
+                        recipientId = data?.get("recipientId") as? String ?: "",
+                        senderName = data?.get("senderName") as? String ?: "",
+                        message = data?.get("message") as? String ?: "",
+                        displayTime = formatTimestamp(data?.get("timestamp") as? Long ?: 0L),
+                        isReceived = data?.get("senderId") != currentUserId,
+                        timestamp = data?.get("timestamp") as? Long ?: 0L,
+                        isRead = data?.get("isRead") as? Boolean ?: false,
+                        messageType = data?.get("messageType") as? String ?: "text",
+                        mediaUrl = data?.get("mediaUrl") as? String
+                    )
+                } ?: emptyList()
+
+                chatBinding.recyclerChat.layoutManager = LinearLayoutManager(requireContext()).apply {
+                    stackFromEnd = true
+                }
+                chatBinding.recyclerChat.adapter = PlannerChatAdapter(messages).also {
+                    if (messages.isNotEmpty()) {
+                        chatBinding.recyclerChat.scrollToPosition(messages.size - 1)
+                    }
+                }
+            }
+
+        chatBinding.editMessage.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                chatBinding.btnSend.visibility = if (s.isNullOrEmpty()) View.GONE else View.VISIBLE
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
         chatBinding.toolbar.setNavigationOnClickListener {
             parentFragmentManager.popBackStack()
         }
 
-        chatBinding.txtRecipientName.text = recipientName
-        chatBinding.txtRecipientStatus.text = "Online"
-
-        val messages = messageMap[recipientName] ?: emptyList()
-        chatBinding.recyclerChat.layoutManager = LinearLayoutManager(requireContext()).apply {
-            stackFromEnd = true
-        }
-        chatBinding.recyclerChat.adapter = PlannerChatAdapter(messages)
-
         chatBinding.btnSend.setOnClickListener {
-            val message = chatBinding.editMessage.text.toString()
-            if (message.isNotEmpty()) {
-                Snackbar.make(chatBinding.root, "Message sent: $message", Snackbar.LENGTH_SHORT).show()
+            val messageText = chatBinding.editMessage.text.toString()
+            if (messageText.isNotEmpty()) {
+                sendMessage(recipientId, recipientName, messageText)
                 chatBinding.editMessage.text?.clear()
             }
         }
     }
 
+    private fun formatTimestamp(timestamp: Long): String {
+        val date = Date(timestamp)
+        return if (isToday(date)) {
+            dateFormat.format(date)
+        } else {
+            dateDayFormat.format(date)
+        }
+    }
+
+    private fun isToday(date: Date): Boolean {
+        val today = Date()
+        return date.year == today.year &&
+                date.month == today.month &&
+                date.date == today.date
+    }
+
+    private fun sendMessage(recipientId: String, recipientName: String, text: String) {
+        val currentUserId = auth.currentUser?.uid ?: return
+        val currentUserName = currentUser?.name ?: "You"
+        val chatId = if (currentUserId < recipientId) {
+            "$currentUserId-$recipientId"
+        } else {
+            "$recipientId-$currentUserId"
+        }
+
+        val message = hashMapOf(
+            "senderId" to currentUserId,
+            "recipientId" to recipientId,
+            "senderName" to currentUserName,
+            "message" to text,
+            "timestamp" to System.currentTimeMillis(),
+            "isRead" to false,
+            "messageType" to "text"
+        )
+
+        db.collection("chats").document(chatId)
+            .collection("messages")
+            .add(message)
+            .addOnSuccessListener {
+                db.collection("chats").document(chatId)
+                    .set(hashMapOf("chatId" to chatId))
+                    .addOnSuccessListener {
+                        Snackbar.make(chatBinding.root, "Message sent", Snackbar.LENGTH_SHORT).show()
+                    }
+            }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
+        usersListener?.remove()
+        chatListener?.remove()
         _chatBinding = null
         _listBinding = null
     }

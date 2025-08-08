@@ -37,7 +37,7 @@
     <string name="email_hint" translatable="false">Email Address</string>
     <string name="phone_hint" translatable="false">Phone Number</string>
     <string name="address_hint" translatable="false">Address</string>
-    <string name="cancel">cancle\n</string>
+    <string name="cancel">cancel\n</string>
     <string name="save_profile">Save_profile</string>
     <string name="required_fields">required_fields</string>
     <string name="address_label">address_label</string>
@@ -58,6 +58,20 @@
     <string name="upcoming_reminders">⏰ Upcoming Reminders</string>
     <string name="my_wedding_checklists">📝 My Wedding Checklists</string>
     <string name="LKR">LKR</string>
+    <string name="profile_image">Profile Image</string>
+    <string name="arrow_icon">Navigate to wishlist</string>
+    <string name="client_image">Client profile picture</string>
+    <string name="favorites_title">My Favorites</string>
+    <string name="no_favorites_found">No favorites yet</string>
+    <string name="add_favorites_prompt">Add items to see them here</string>
+    <string name="swipe_to_refresh">Pull to refresh</string>
+    <string name="loading_favorites">Loading favorites…</string>
+
+
+    <string name="category_jewelry">Jewelry</string>
+    <string name="category_venue">Venue</string>
+    <string name="category_catering">Catering</string>
+    <string name="category_other">Other</string>
     <string name="venues_title">Venues</string>
     <string name="back_button_description">Navigate back</string>
     <string name="item_image_desc">Vendor image</string>
@@ -66,7 +80,7 @@
     <string name="favorite_button_desc">Toggle favorite</string>
     <string name="visit_website">Visit Website</string>
     <string name="venue_rating_format">Rating: %1$.1f (%2$d+ reviews)</string>
-    <string name="favorites_title">My Favorites</string>
+
     <string name="no_favorites_message">No favorites yet\nTap to refresh</string>
     <string name="empty_favorites_desc">Empty favorites icon</string>
     <string name="removed_from_favorites">%s removed from favorites</string>
@@ -91,6 +105,25 @@
     <string name="wedding_car_image_desc">Wedding car service image</string>
     <string name="beautician_image_desc">Bridal beautician photo</string>
     <string name="please_log_in_to_view_favorites">Please log in to view your favorites.</string>
-
+    <string name="lkr_0">LKR 0</string>
+    <string name="set_budget_title">Set Budget</string>
+    <string name="currency_hint">Select Currency</string>
+    <string name="amount_hint">Add budget Amount</string>
+    <string name="reminder_date_hint">Add Reminder Date</string>
+    <string name="save">Add budget</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="review_rating">Rating</string>
+    <string name="review_title">add review</string>
+    <string name="review_comment">Add Review Comment</string>
+    <string name="service_price">Add Service Price</string>
+    <string name="service_description">Decribe your service</string>
+    <string name="service_name">Add Service Name</string>
+    <string-array name="currencies_array">
+        <item>USD</item>
+        <item>EUR</item>
+        <item>LKR</item>
+        <item>GBP</item>
+        <item>JPY</item>
+    </string-array>
 </resources>
 

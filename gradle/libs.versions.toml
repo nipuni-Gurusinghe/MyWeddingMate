@@ -17,6 +17,7 @@ firebase-firestore = "24.0.0"
 firebase-storage = "20.0.0"
 glide = "4.16.0"
 gson = "2.10.1"
+navigationFragmentKtx = "2.9.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -35,6 +36,7 @@ firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage-ktx", version.ref = "firebase-storage" }
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

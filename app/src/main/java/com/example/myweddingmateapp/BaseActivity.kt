@@ -111,17 +111,7 @@ abstract class BaseActivity : AppCompatActivity() {
                 android.util.Log.d("BaseActivity", "RecyclerView adjusted for navbar")
             }
 
-            // Adjust FAB if it exists
-            rootLayout.findViewById<FloatingActionButton>(R.id.fabNewChat)?.let {
-                val params = it.layoutParams as RelativeLayout.LayoutParams
-                params.removeRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
-                params.addRule(RelativeLayout.ABOVE, R.id.navBar)
-                params.bottomMargin = 24
-                params.addRule(RelativeLayout.ALIGN_PARENT_END)
-                params.marginEnd = 24
-                it.layoutParams = params
-                android.util.Log.d("BaseActivity", "FAB adjusted for navbar")
-            }
+
 
             // Adjust empty state if it exists
             rootLayout.findViewById<LinearLayout>(R.id.emptyState)?.let {

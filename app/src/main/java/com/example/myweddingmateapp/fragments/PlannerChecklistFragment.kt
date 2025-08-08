@@ -6,35 +6,72 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.myweddingmateapp.R
-import com.example.myweddingmateapp.adapters.PlannerChecklistAdapter
-import com.example.myweddingmateapp.models.Client
+import com.example.myweddingmateapp.adapters.UserListAdapter
+import com.example.myweddingmateapp.databinding.FragmentPlannerChecklistBinding
+import com.example.myweddingmateapp.models.User
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class PlannerChecklistFragment : Fragment() {
-
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var plannerChecklistAdapter: PlannerChecklistAdapter
-    private val clients = listOf(
-        Client("Nadeesha & Sahan", R.drawable.ic_profile),
-        Client("Ravi & Anjali", R.drawable.ic_profile),
-        Client("Dilan & Kavindi", R.drawable.ic_profile)
-    )
-
+    private var _binding: FragmentPlannerChecklistBinding? = null
+    private val binding get() = _binding!!
+    private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_planner_checklist, container, false)
+    ): View {
+        _binding = FragmentPlannerChecklistBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupListScreen()
+    }
 
-        recyclerView = view.findViewById(R.id.recyclerChecklist)
-        plannerChecklistAdapter = PlannerChecklistAdapter(clients) { client -> }
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView.adapter = plannerChecklistAdapter
+    private fun setupListScreen() {
+        binding.recyclerChecklist.layoutManager = LinearLayoutManager(requireContext())
+
+        db.collection("users")
+            .whereEqualTo("role", "User")
+            .whereEqualTo("selectedPlannerId", auth.currentUser?.uid)
+            .get()
+            .addOnSuccessListener { documents ->
+                val users = documents.mapNotNull {
+                    User(
+                        uid = it.id,
+                        name = it.getString("name") ?: "No Name",
+                        email = it.getString("email") ?: "",
+                        profileImage = it.getString("profileImage") ?: ""
+                    )
+                }
+
+                binding.recyclerChecklist.adapter = UserListAdapter(users) { user ->
+                    val detailFragment = PlannerChecklistDetailFragment().apply {
+                        arguments = Bundle().apply {
+                            putString("userId", user.uid)
+                        }
+                    }
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.fragmentContainer, detailFragment)
+                        .addToBackStack(null)
+                        .commit()
+                }
+
+                updateCounters(users.size)
+            }
+    }
+
+    private fun updateCounters(total: Int) {
+        binding.textTotalCount.text = total.toString()
+        binding.textCompletedCount.text = "0"
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

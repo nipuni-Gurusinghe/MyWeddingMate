@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -13,74 +12,162 @@ import com.example.myweddingmateapp.R
 import com.example.myweddingmateapp.adapters.PlannerBudgetAdapter
 import com.example.myweddingmateapp.adapters.PlannerClientAdapter
 import com.example.myweddingmateapp.adapters.PlannerReminderAdapter
+import com.example.myweddingmateapp.databinding.FragmentPlannerDashboardBinding
+import com.example.myweddingmateapp.models.Client
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import java.text.SimpleDateFormat
+import java.util.*
 
 class PlannerDashboardFragment : Fragment() {
 
-    private lateinit var recyclerBudget: RecyclerView
-    private lateinit var recyclerReminders: RecyclerView
-    private lateinit var recyclerClients: RecyclerView
-    private lateinit var emptyBudget: LinearLayout
-    private lateinit var emptyReminders: LinearLayout
-    private lateinit var emptyClients: LinearLayout
+    private var _binding: FragmentPlannerDashboardBinding? = null
+    private val binding get() = _binding!!
+    private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
+    private val currentUserId = auth.currentUser?.uid ?: ""
+    private val allClients = mutableListOf<Client>()
+    private val allBudgetItems = mutableListOf<String>()
+    private val allReminderItems = mutableListOf<String>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_planner_dashboard, container, false)
+    ): View {
+        _binding = FragmentPlannerDashboardBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        recyclerBudget = view.findViewById(R.id.recyclerBudget)
-        recyclerReminders = view.findViewById(R.id.recyclerReminders)
-        recyclerClients = view.findViewById(R.id.recyclerClients)
-        emptyBudget = view.findViewById(R.id.emptyBudget)
-        emptyReminders = view.findViewById(R.id.emptyReminders)
-        emptyClients = view.findViewById(R.id.emptyClients)
-
         setupRecyclerViews()
-        loadDashboardData()
+        fetchClients()
     }
 
     private fun setupRecyclerViews() {
-        recyclerBudget.layoutManager = LinearLayoutManager(requireContext())
-        recyclerReminders.layoutManager = LinearLayoutManager(requireContext())
-        recyclerClients.layoutManager = LinearLayoutManager(requireContext())
+        with(binding) {
+            recyclerBudget.layoutManager = LinearLayoutManager(requireContext())
+            recyclerReminders.layoutManager = LinearLayoutManager(requireContext())
+            recyclerClients.layoutManager = LinearLayoutManager(requireContext())
 
-        recyclerBudget.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-        recyclerReminders.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-        recyclerClients.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
+            listOf(recyclerBudget, recyclerReminders, recyclerClients).forEach { recyclerView ->
+                recyclerView.addItemDecoration(
+                    DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
+            }
+        }
     }
 
-    private fun loadDashboardData() {
-        val budgetItems = listOf(
-            "You've spent Rs. 450,000 this month",
-            "Remaining budget: Rs. 150,000",
-            "Most expensive category: Venue (Rs. 300,000)"
-        )
-        updateRecycler(recyclerBudget, emptyBudget, PlannerBudgetAdapter(budgetItems), budgetItems)
+    private fun fetchClients() {
+        db.collection("couple_profiles")
+            .orderBy("weddingDate", Query.Direction.ASCENDING)
+            .limit(5)
+            .get()
+            .addOnSuccessListener { documents ->
+                allClients.clear()
+                allClients.addAll(documents.mapNotNull { doc ->
+                    val email = doc.getString("email") ?: return@mapNotNull null
+                    val weddingDate = doc.getString("weddingDate") ?: ""
+                    Client(doc.id, "Wedding on $weddingDate", email)
+                })
 
-        val reminderItems = listOf(
-            "Cake tasting – Friday 10 AM",
-            "Venue visit – Saturday 2 PM",
-            "Dress fitting – Next Wednesday"
-        )
-        updateRecycler(recyclerReminders, emptyReminders, PlannerReminderAdapter(reminderItems), reminderItems)
+                updateRecycler(binding.recyclerClients, binding.emptyClients,
+                    PlannerClientAdapter(allClients) { }, allClients)
 
-        val clientItems = listOf(
-            "Nadeesha & Sahan – Aug 12",
-            "Ravi & Anjali – Sept 5",
-            "Priya & Arun – Oct 15"
-        )
-        updateRecycler(recyclerClients, emptyClients, PlannerClientAdapter(clientItems), clientItems)
+                fetchClientBudgetsAndReminders()
+            }
+            .addOnFailureListener {
+                binding.recyclerClients.visibility = View.GONE
+                binding.emptyClients.visibility = View.VISIBLE
+            }
+    }
+
+    private fun fetchClientBudgetsAndReminders() {
+        allBudgetItems.clear()
+        allReminderItems.clear()
+
+        val currentDate = Calendar.getInstance().time
+
+        var processedClients = 0
+
+        if (allClients.isEmpty()) {
+            updateBudgetAndReminderViews()
+            return
+        }
+
+        for (client in allClients) {
+            db.collection("userFavorites")
+                .document(client.uid)
+                .collection("items")
+                .whereGreaterThan("budget", 0.0)
+                .orderBy("budget", Query.Direction.DESCENDING)
+                .limit(3)
+                .get()
+                .addOnSuccessListener { documents ->
+                    documents.forEach { doc ->
+                        val category = doc.getString("category") ?: "Uncategorized"
+                        val budget = doc.getDouble("budget") ?: 0.0
+                        val currency = doc.getString("currency") ?: "LKR"
+                        allBudgetItems.add("$category: $currency $budget (${client.name})")
+                    }
+
+                    db.collection("userFavorites")
+                        .document(client.uid)
+                        .collection("items")
+                        .whereGreaterThanOrEqualTo("reminderDate", currentDate)
+                        .orderBy("reminderDate", Query.Direction.ASCENDING)
+                        .limit(5)
+                        .get()
+                        .addOnSuccessListener { reminderDocs ->
+                            reminderDocs.forEach { doc ->
+                                val category = doc.getString("category") ?: "Uncategorized"
+                                val reminderDate = doc.getDate("reminderDate")?.let {
+                                    SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault()).format(it)
+                                } ?: return@forEach
+                                allReminderItems.add("$category - $reminderDate (${client.name})")
+                            }
+
+                            processedClients++
+                            if (processedClients == allClients.size) {
+                                updateBudgetAndReminderViews()
+                            }
+                        }
+                }
+                .addOnFailureListener {
+                    processedClients++
+                    if (processedClients == allClients.size) {
+                        updateBudgetAndReminderViews()
+                    }
+                }
+        }
+    }
+
+    private fun updateBudgetAndReminderViews() {
+        if (allBudgetItems.isNotEmpty()) {
+            val uniqueBudgetItems = allBudgetItems.distinct().take(5)
+            binding.recyclerBudget.visibility = View.VISIBLE
+            binding.emptyBudget.visibility = View.GONE
+            binding.recyclerBudget.adapter = PlannerBudgetAdapter(uniqueBudgetItems)
+        } else {
+            binding.recyclerBudget.visibility = View.GONE
+            binding.emptyBudget.visibility = View.VISIBLE
+        }
+
+        if (allReminderItems.isNotEmpty()) {
+            val uniqueReminderItems = allReminderItems.distinct().take(5)
+            binding.recyclerReminders.visibility = View.VISIBLE
+            binding.emptyReminders.visibility = View.GONE
+            binding.recyclerReminders.adapter = PlannerReminderAdapter(uniqueReminderItems)
+        } else {
+            binding.recyclerReminders.visibility = View.GONE
+            binding.emptyReminders.visibility = View.VISIBLE
+        }
     }
 
     private fun updateRecycler(
         recyclerView: RecyclerView,
-        emptyView: LinearLayout,
+        emptyView: View,
         adapter: RecyclerView.Adapter<*>,
         items: List<*>
     ) {
@@ -92,5 +179,10 @@ class PlannerDashboardFragment : Fragment() {
             recyclerView.visibility = View.GONE
             emptyView.visibility = View.VISIBLE
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
