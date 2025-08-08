@@ -1,23 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="24dp"
-    android:focusableInTouchMode="true">
+    android:padding="16dp">
 
     <TextView
         android:id="@+id/textTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/set_budget_title"
-        android:textSize="22sp"
-        android:textColor="?attr/colorOnSurface"
+        android:text="Set Budget"
+        android:textSize="20sp"
+        android:textColor="#000000"
         android:textStyle="bold"
         android:gravity="center"
-        android:layout_marginBottom="24dp"
-        android:letterSpacing="0.03"/>
+        android:layout_marginBottom="16dp"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -25,108 +22,114 @@
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textInputLayoutCurrency"
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.4"
-            android:hint="@string/currency_hint"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            app:startIconTint="?attr/colorPrimary">
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:background="@drawable/edittext_border"
+            android:padding="4dp">
 
-            <AutoCompleteTextView
-                android:id="@+id/autoCompleteCurrency"
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="none"
-                android:clickable="true"
-                android:focusable="false"
-                android:importantForAutofill="yes"
-                android:autofillHints="currency"
-               />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:text="Currency"
+                android:textSize="12sp"
+                android:textColor="#808080"
+                android:paddingLeft="8dp"
+                android:paddingTop="4dp"/>
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textInputLayoutBudget"
+            <Spinner
+                android:id="@+id/spinnerCurrency"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@android:color/transparent"
+                android:spinnerMode="dropdown"/>
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.6"
+            android:layout_weight="2"
             android:layout_marginStart="16dp"
-            android:hint="@string/amount_hint"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:orientation="vertical"
+            android:background="@drawable/edittext_border"
+            android:padding="4dp">
 
-            app:startIconTint="?attr/colorPrimary"
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Amount"
+                android:textSize="12sp"
+                android:textColor="#808080"
+                android:paddingLeft="8dp"
+                android:paddingTop="4dp"/>
 
-            app:helperTextEnabled="true">
-
-            <com.google.android.material.textfield.TextInputEditText
+            <EditText
                 android:id="@+id/editBudget"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:inputType="numberDecimal"
-                android:imeOptions="actionNext"
-                android:importantForAutofill="yes"
-                android:autofillHints="transactionAmount"
+                android:imeOptions="actionDone"
+                android:background="@android:color/transparent"
+                android:padding="8dp"
                 android:gravity="end"/>
-        </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
     </LinearLayout>
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/textInputLayoutReminder"
+    <LinearLayout
+        android:id="@+id/layoutReminderDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/reminder_date_hint"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_marginTop="16dp"
-        app:endIconMode="custom"
-        app:endIconDrawable="@drawable/ic_calendar"
+        android:orientation="vertical"
+        android:background="@drawable/edittext_border"
+        android:padding="4dp">
 
-        app:endIconTint="?attr/colorPrimary"
-
-        app:helperTextEnabled="true">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/editReminderDate"
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:text="Reminder Date"
+            android:textSize="12sp"
+            android:textColor="#808080"
+            android:paddingLeft="8dp"
+            android:paddingTop="4dp"/>
+
+        <EditText
+            android:id="@+id/editReminderDate"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
             android:inputType="none"
             android:clickable="true"
             android:focusable="false"
-            android:importantForAutofill="yes"
-            android:autofillHints="date"/>
-    </com.google.android.material.textfield.TextInputLayout>
+            android:background="@android:color/transparent"
+            android:padding="8dp"/>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="32dp"
-        android:divider="@drawable/divider_vertical"
-        android:showDividers="middle"
-        android:dividerPadding="12dp">
+        android:layout_marginTop="24dp"
+        android:orientation="horizontal">
 
-        <com.google.android.material.button.MaterialButton
+        <Button
             android:id="@+id/btnCancel"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
-            android:text="@string/cancel"
-            android:textAllCaps="false"
-            android:layout_marginEnd="6dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"/>
+            android:layout_marginEnd="8dp"
+            android:text="Cancel"
+            android:background="@drawable/button_outline_background"
+            android:textColor="#000000"/>
 
-        <com.google.android.material.button.MaterialButton
+        <Button
             android:id="@+id/btnSave"
-            style="@style/Widget.MaterialComponents.Button"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
-            android:text="@string/save"
-            android:textAllCaps="false"
-            android:layout_marginStart="6dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"/>
+            android:layout_marginStart="8dp"
+            android:text="Save"
+            android:background="@drawable/button_filled_background"
+            android:textColor="#FFFFFF"/>
     </LinearLayout>
 </LinearLayout>

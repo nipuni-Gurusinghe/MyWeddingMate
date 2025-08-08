@@ -12,5 +12,6 @@ data class PlannerFavouriteItem(
     val reminderDate: String = "",
     val isFavorite: Boolean = false,
     val notes: String = "",
-    val userId: String = ""
+    val userId: String = "",
+    val isCompleted:Boolean? =false
 )

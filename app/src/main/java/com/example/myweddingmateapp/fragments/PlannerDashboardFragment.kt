@@ -14,6 +14,7 @@ import com.example.myweddingmateapp.adapters.PlannerClientAdapter
 import com.example.myweddingmateapp.adapters.PlannerReminderAdapter
 import com.example.myweddingmateapp.databinding.FragmentPlannerDashboardBinding
 import com.example.myweddingmateapp.models.Client
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import java.text.SimpleDateFormat
@@ -24,6 +25,11 @@ class PlannerDashboardFragment : Fragment() {
     private var _binding: FragmentPlannerDashboardBinding? = null
     private val binding get() = _binding!!
     private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
+    private val currentUserId = auth.currentUser?.uid ?: ""
+    private val allClients = mutableListOf<Client>()
+    private val allBudgetItems = mutableListOf<String>()
+    private val allReminderItems = mutableListOf<String>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -37,8 +43,7 @@ class PlannerDashboardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerViews()
-        loadDashboardData()
-        fetchClientsFromDatabase()
+        fetchClients()
     }
 
     private fun setupRecyclerViews() {
@@ -49,58 +54,115 @@ class PlannerDashboardFragment : Fragment() {
 
             listOf(recyclerBudget, recyclerReminders, recyclerClients).forEach { recyclerView ->
                 recyclerView.addItemDecoration(
-                    DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL)
-                )
+                    DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
             }
         }
     }
 
-    private fun loadDashboardData() {
-        val budgetItems = listOf(
-            "You've spent Rs. 450,000 this month",
-            "Remaining budget: Rs. 150,000",
-            "Most expensive category: Venue (Rs. 300,000)"
-        )
-        updateRecycler(binding.recyclerBudget, binding.emptyBudget,
-            PlannerBudgetAdapter(budgetItems), budgetItems)
-
-        val reminderItems = listOf(
-            "Cake tasting – Friday 10 AM",
-            "Venue visit – Saturday 2 PM",
-            "Dress fitting – Next Wednesday"
-        )
-        updateRecycler(binding.recyclerReminders, binding.emptyReminders,
-            PlannerReminderAdapter(reminderItems), reminderItems)
-    }
-
-    private fun fetchClientsFromDatabase() {
+    private fun fetchClients() {
         db.collection("couple_profiles")
-            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .orderBy("weddingDate", Query.Direction.ASCENDING)
             .limit(5)
             .get()
             .addOnSuccessListener { documents ->
-                val clients = documents.mapNotNull { doc ->
+                allClients.clear()
+                allClients.addAll(documents.mapNotNull { doc ->
                     val email = doc.getString("email") ?: return@mapNotNull null
-                    val createdAt = doc.getLong("createdAt")?.let {
-                        SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(Date(it))
-                    } ?: "Unknown date"
-                    Client(
-                        uid = doc.id,
-                        name = "Couple - $createdAt",
-                        email = email
-                    )
-                }
-                updateRecycler(
-                    binding.recyclerClients,
-                    binding.emptyClients,
-                    PlannerClientAdapter(clients) { /* Handle click */ },
-                    clients
-                )
+                    val weddingDate = doc.getString("weddingDate") ?: ""
+                    Client(doc.id, "Wedding on $weddingDate", email)
+                })
+
+                updateRecycler(binding.recyclerClients, binding.emptyClients,
+                    PlannerClientAdapter(allClients) { }, allClients)
+
+                fetchClientBudgetsAndReminders()
             }
             .addOnFailureListener {
                 binding.recyclerClients.visibility = View.GONE
                 binding.emptyClients.visibility = View.VISIBLE
             }
+    }
+
+    private fun fetchClientBudgetsAndReminders() {
+        allBudgetItems.clear()
+        allReminderItems.clear()
+
+        val currentDate = Calendar.getInstance().time
+
+        var processedClients = 0
+
+        if (allClients.isEmpty()) {
+            updateBudgetAndReminderViews()
+            return
+        }
+
+        for (client in allClients) {
+            db.collection("userFavorites")
+                .document(client.uid)
+                .collection("items")
+                .whereGreaterThan("budget", 0.0)
+                .orderBy("budget", Query.Direction.DESCENDING)
+                .limit(3)
+                .get()
+                .addOnSuccessListener { documents ->
+                    documents.forEach { doc ->
+                        val category = doc.getString("category") ?: "Uncategorized"
+                        val budget = doc.getDouble("budget") ?: 0.0
+                        val currency = doc.getString("currency") ?: "LKR"
+                        allBudgetItems.add("$category: $currency $budget (${client.name})")
+                    }
+
+                    db.collection("userFavorites")
+                        .document(client.uid)
+                        .collection("items")
+                        .whereGreaterThanOrEqualTo("reminderDate", currentDate)
+                        .orderBy("reminderDate", Query.Direction.ASCENDING)
+                        .limit(5)
+                        .get()
+                        .addOnSuccessListener { reminderDocs ->
+                            reminderDocs.forEach { doc ->
+                                val category = doc.getString("category") ?: "Uncategorized"
+                                val reminderDate = doc.getDate("reminderDate")?.let {
+                                    SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault()).format(it)
+                                } ?: return@forEach
+                                allReminderItems.add("$category - $reminderDate (${client.name})")
+                            }
+
+                            processedClients++
+                            if (processedClients == allClients.size) {
+                                updateBudgetAndReminderViews()
+                            }
+                        }
+                }
+                .addOnFailureListener {
+                    processedClients++
+                    if (processedClients == allClients.size) {
+                        updateBudgetAndReminderViews()
+                    }
+                }
+        }
+    }
+
+    private fun updateBudgetAndReminderViews() {
+        if (allBudgetItems.isNotEmpty()) {
+            val uniqueBudgetItems = allBudgetItems.distinct().take(5)
+            binding.recyclerBudget.visibility = View.VISIBLE
+            binding.emptyBudget.visibility = View.GONE
+            binding.recyclerBudget.adapter = PlannerBudgetAdapter(uniqueBudgetItems)
+        } else {
+            binding.recyclerBudget.visibility = View.GONE
+            binding.emptyBudget.visibility = View.VISIBLE
+        }
+
+        if (allReminderItems.isNotEmpty()) {
+            val uniqueReminderItems = allReminderItems.distinct().take(5)
+            binding.recyclerReminders.visibility = View.VISIBLE
+            binding.emptyReminders.visibility = View.GONE
+            binding.recyclerReminders.adapter = PlannerReminderAdapter(uniqueReminderItems)
+        } else {
+            binding.recyclerReminders.visibility = View.GONE
+            binding.emptyReminders.visibility = View.VISIBLE
+        }
     }
 
     private fun updateRecycler(

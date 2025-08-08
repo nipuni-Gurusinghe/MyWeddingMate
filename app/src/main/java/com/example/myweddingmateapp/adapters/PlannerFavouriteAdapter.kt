@@ -20,7 +20,7 @@ class PlannerFavouriteAdapter(
         fun bind(item: PlannerFavouriteItem) {
             binding.tvCategory.text = item.category
             binding.tvVendorId.text = item.vendorId
-            binding.tvAddedDate.text = "Added: ${item.addedDate}"
+            binding.tvAddedDate.text = "Added: ${item.reminderDate}"
             binding.tvBudget.text = if (item.budget > 0) "LKR ${"%,.2f".format(item.budget)}" else "Set Budget"
             binding.ivFavorite.setImageResource(if (item.isFavorite) R.drawable.ic_heart_filled else R.drawable.ic_favorite_border)
             binding.ivFavorite.setOnClickListener { onFavoriteToggle(item) }
