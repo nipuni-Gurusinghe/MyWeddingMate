@@ -166,6 +166,10 @@
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
 
 
+        <activity
+            android:name=".PlannerProfileHostActivity"
+            android:parentActivityName="com.example.myweddingmateapp.WeddingPlannersActivity"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
 
 
 
