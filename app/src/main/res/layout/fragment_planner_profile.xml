@@ -99,6 +99,7 @@
                             android:importantForAccessibility="yes"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
+                   
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -147,13 +148,13 @@
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editLocation"
-                            android:hint="Location (City, Country)"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="#212121"
-                            android:textSize="16sp"
+                            android:hint="Location (City, Country)"
+                            android:importantForAccessibility="yes"
                             android:inputType="text"
-                            android:importantForAccessibility="yes"/>
+                            android:textColor="#212121"
+                            android:textSize="16sp" />
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -429,77 +430,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="8dp"
-                android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="#FFFFFF"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="6dp"
-                app:strokeColor="#E0E0E0"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="24dp">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Availability"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:textColor="#3E2723"
-                        android:layout_marginBottom="16dp"/>
-
-                    <com.google.android.material.chip.ChipGroup
-                        android:id="@+id/availabilityChipGroup"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"
-                        app:singleSelection="true">
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipAvailable"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Available"
-                            app:chipBackgroundColor="#FFCCBC"
-                            app:chipStrokeColor="#3E2723"
-                            app:chipStrokeWidth="1dp"
-                            app:chipCornerRadius="16dp"
-                            android:textColor="#3E2723"
-                            app:checkedIconVisible="true"/>
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipLimited"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Limited Availability"
-                            app:chipBackgroundColor="#FFCCBC"
-                            app:chipStrokeColor="#3E2723"
-                            app:chipStrokeWidth="1dp"
-                            app:chipCornerRadius="16dp"
-                            android:textColor="#3E2723"
-                            app:checkedIconVisible="true"/>
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipUnavailable"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Currently Unavailable"
-                            app:chipBackgroundColor="#FFCCBC"
-                            app:chipStrokeColor="#3E2723"
-                            app:chipStrokeWidth="1dp"
-                            app:chipCornerRadius="16dp"
-                            android:textColor="#3E2723"
-                            app:checkedIconVisible="true"/>
-                    </com.google.android.material.chip.ChipGroup>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"

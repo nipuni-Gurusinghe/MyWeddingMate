@@ -36,7 +36,7 @@ class PlannerProfileFragment : Fragment() {
     private lateinit var btnSignOut: Button
     private lateinit var btnAddSpecialty: Button
     private lateinit var specialtiesChipGroup: ChipGroup
-    private lateinit var availabilityChipGroup: ChipGroup
+
     private lateinit var profilePicture: ImageView
     private lateinit var editName: TextInputEditText
     private lateinit var editEmail: TextInputEditText
@@ -104,7 +104,7 @@ class PlannerProfileFragment : Fragment() {
         btnAddSpecialty = view.findViewById(R.id.btnAddSpecialty)
         btnSignOut = view.findViewById(R.id.btnSignOut)
         specialtiesChipGroup = view.findViewById(R.id.specialtiesChipGroup)
-        availabilityChipGroup = view.findViewById(R.id.availabilityChipGroup)
+
         profilePicture = view.findViewById(R.id.profilePicture)
         editName = view.findViewById(R.id.editName)
         editEmail = view.findViewById(R.id.editEmail)
@@ -151,11 +151,7 @@ class PlannerProfileFragment : Fragment() {
         specialtiesChipGroup.removeAllViews()
         user.specialties?.forEach { addSpecialtyChip(it) }
 
-        when (user.availability) {
-            "Available" -> availabilityChipGroup.check(R.id.chipAvailable)
-            "Limited Availability" -> availabilityChipGroup.check(R.id.chipLimited)
-            "Currently Unavailable" -> availabilityChipGroup.check(R.id.chipUnavailable)
-        }
+
     }
 
     private fun updateUIForUserRole() {
@@ -165,7 +161,7 @@ class PlannerProfileFragment : Fragment() {
 
         val editableViews = listOf(
             btnEditPicture, btnUpdate, btnAddSpecialty,
-            specialtiesChipGroup, availabilityChipGroup,
+            specialtiesChipGroup,
             editName, editEmail, editPhone, editLocation,
             editCompany, editYearsExperience, editPriceRange,
             editBio, editInstagram, editFacebook, editWebsite
@@ -247,12 +243,6 @@ class PlannerProfileFragment : Fragment() {
             }
         }
 
-        val availability = when (availabilityChipGroup.checkedChipId) {
-            R.id.chipAvailable -> "Available"
-            R.id.chipLimited -> "Limited Availability"
-            R.id.chipUnavailable -> "Currently Unavailable"
-            else -> ""
-        }
 
         val user = User(
             uid = uid,
@@ -268,8 +258,9 @@ class PlannerProfileFragment : Fragment() {
             facebook = editFacebook.text.toString(),
             website = editWebsite.text.toString(),
             specialties = specialties,
-            availability = availability,
-            role = if (isPlanner) "Wedding Planner" else "User"
+            availability = "Available",
+            role = if (isPlanner) "Wedding Planner" else "User",
+
         )
 
         db.collection("users").document(uid).set(user)

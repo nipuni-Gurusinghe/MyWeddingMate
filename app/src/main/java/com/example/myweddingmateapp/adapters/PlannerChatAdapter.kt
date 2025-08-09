@@ -39,22 +39,18 @@ class PlannerChatAdapter(private val messages: List<ChatMessage>) :
     override fun getItemCount(): Int = messages.size
 
     inner class MessageViewHolder(itemView: View, viewType: Int) : RecyclerView.ViewHolder(itemView) {
-        private val senderName: TextView?
+
         private val messageText: TextView
         private val messageTime: TextView
 
         init {
             messageText = itemView.findViewById(R.id.textMessage)
             messageTime = itemView.findViewById(R.id.textTime)
-            senderName = if (viewType == VIEW_TYPE_RECEIVED) {
-                itemView.findViewById(R.id.textSender)
-            } else {
-                null
-            }
+
         }
 
         fun bind(message: ChatMessage) {
-            senderName?.text = message.senderName
+
             messageText.text = message.message
             messageTime.text = timeFormat.format(Date(message.timestamp))
         }

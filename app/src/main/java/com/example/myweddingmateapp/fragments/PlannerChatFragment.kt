@@ -178,7 +178,6 @@ class PlannerChatFragment : Fragment() {
                     ChatMessage(
                         senderId = data?.get("senderId") as? String ?: "",
                         recipientId = data?.get("recipientId") as? String ?: "",
-                        senderName = data?.get("senderName") as? String ?: "",
                         message = data?.get("message") as? String ?: "",
                         displayTime = formatTimestamp(data?.get("timestamp") as? Long ?: 0L),
                         isReceived = data?.get("senderId") != currentUserId,
@@ -237,8 +236,9 @@ class PlannerChatFragment : Fragment() {
     }
 
     private fun sendMessage(recipientId: String, recipientName: String, text: String) {
+
         val currentUserId = auth.currentUser?.uid ?: return
-        val currentUserName = currentUser?.name ?: "You"
+
         val chatId = if (currentUserId < recipientId) {
             "$currentUserId-$recipientId"
         } else {
@@ -248,7 +248,6 @@ class PlannerChatFragment : Fragment() {
         val message = hashMapOf(
             "senderId" to currentUserId,
             "recipientId" to recipientId,
-            "senderName" to currentUserName,
             "message" to text,
             "timestamp" to System.currentTimeMillis(),
             "isRead" to false,
