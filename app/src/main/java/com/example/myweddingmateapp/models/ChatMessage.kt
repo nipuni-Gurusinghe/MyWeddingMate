@@ -3,7 +3,7 @@ package com.example.myweddingmateapp.models
 data class ChatMessage(
     val senderId: String = "",
     val recipientId: String = "",
-    val senderName: String = "",
+
     val message: String = "",
     val displayTime: String = "",
     val isReceived: Boolean = false,

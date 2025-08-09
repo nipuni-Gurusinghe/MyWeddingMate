@@ -16,14 +16,7 @@
         android:background="@drawable/bg_chat_bubble_received"
         android:padding="12dp">
 
-        <TextView
-            android:id="@+id/textSender"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/primary_brown"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            tools:text="Nadeesha"/>
+
 
         <TextView
             android:id="@+id/textMessage"
